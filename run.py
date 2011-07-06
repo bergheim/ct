@@ -63,4 +63,6 @@ def show_user(username):
     return "Hello, %s!" % username
 
 if __name__ == '__main__':
-    app.run(debug=True,host='10.1.100.118')
+    host = config.get("server", "host")
+    port = config.get("server", "port")
+    app.run(debug=True, host=host, port=int(port))

@@ -67,4 +67,4 @@ def show_user(username):
 if __name__ == '__main__':
     host = config.get("server", "host")
     port = config.get("server", "port")
-    app.run(debug=True, host=host, port=int(port))
+    app.run(host=host, port=int(port))

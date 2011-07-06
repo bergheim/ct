@@ -1,5 +1,6 @@
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
+import ConfigParser
 app = Flask(__name__)
 
 class MethodRewriteMiddleware(object):
@@ -31,8 +32,10 @@ class Hours(object):
 
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
-app.config['SECRET_KEY'] = 'secret'
+config = ConfigParser.ConfigParser()
+config.read(["config.ini.sample", "config.ini"])
+app.config['DEBUG'] = config.get("login", "debug")
+app.config['SECRET_KEY'] = config.get("login", "secret_key")
 app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
 
 @app.route('/')

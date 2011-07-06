@@ -1,0 +1,5 @@
+[login]
+username =
+password =
+debug = True
+secret_key = secret

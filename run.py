@@ -34,8 +34,8 @@ class Hours(object):
 app = Flask(__name__)
 config = ConfigParser.ConfigParser()
 config.read(["config.ini.sample", "config.ini"])
-app.config['DEBUG'] = config.get("login", "debug")
-app.config['SECRET_KEY'] = config.get("login", "secret_key")
+app.config['DEBUG'] = config.get("server", "debug")
+app.config['SECRET_KEY'] = config.get("server", "secret_key")
 app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
 
 @app.route('/')

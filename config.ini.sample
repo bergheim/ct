@@ -1,9 +1,5 @@
-[login]
-username =
-password =
-debug = True
-secret_key = secret
-
 [server]
 host = 10.1.100.118
 port = 5000
+debug = True
+secret_key = secret

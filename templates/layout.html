@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <title>{% block title %}{% endblock %} - CurrentTime</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b1.css') }}">
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile.datebox.css') }}">
+
+    <script src="http://code.jquery.com/jquery-1.6.1.min.js"></script>
+    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.mobile.datebox.js') }}"></script>
+
+    {% endblock %}
+  </head>
+<body>
+<div data-role="page" id="page">
+<div data-role="header">
+<h1>CurrentTime</h1>
+</div>
+  <div data-role="content" id="content">{% block content %}{% endblock %}</div>
+  <div data-role="footer" id="footer">
+    {% block footer %}
+    some kind of <a href="http://domain.invalid/">footer</a>.
+    {% endblock %}
+  </div>
+</div>
+</body>
+</html>

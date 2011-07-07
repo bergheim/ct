@@ -24,8 +24,12 @@ class MethodRewriteMiddleware(object):
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
 class User(object):
-    def __init__(self, name = None):
-        self.name = name
+    def __init__(self, username = None):
+        self.username = username
+        session['username'] = username
+
+    def __del__(self):
+        session.pop(username, None)
 
 class UserForm(Form):
     username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
@@ -45,8 +49,8 @@ app.config['SECRET_KEY'] = config.get("server", "secret_key")
 app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
 
 @app.route('/')
-def hello_world():
-    return "Hello World no!"
+def index():
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -54,9 +58,13 @@ def login():
     if request.method == 'POST' and form.validate():
         user = User(form.username.data)
         flash('Login OK')
-        return redirect(url_for('hello_test'))
+        return redirect(url_for('show_user', username=user.username))
 
     return render_template('login.html', form=form)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
 
 @app.route('/hours', methods=['GET'])
 def hours_list():
@@ -68,7 +76,10 @@ def hello_test():
 
 @app.route('/user/<username>')
 def show_user(username):
-    return "Hello, %s!" % username
+    if 'username' in session:
+        return render_template('user.html', username=username)
+
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     host = config.get("server", "host")

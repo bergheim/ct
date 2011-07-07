@@ -2,6 +2,7 @@
 
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
+from flaskext.wtf import Form, TextField, Required, validators
 import ConfigParser
 app = Flask(__name__)
 
@@ -22,10 +23,12 @@ class MethodRewriteMiddleware(object):
                 method = method.encode('ascii', 'replace')
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
-
 class User(object):
     def __init__(self, name = None):
         self.name = name
+
+class UserForm(Form):
+    username = TextField(u'Username', [validators.Length(min=4, max=25)])
 
 class Hours(object):
     def __init__(self, id = None, name = None):
@@ -46,15 +49,17 @@ def hello_world():
 
 @app.route('/login', methods=['GET','POST'])
 def login():
-    if request.method == 'GET':
-        return render_template('login.html')
+    form = UserForm()
+    if request.method == 'POST' and form.validate():
+        user = User(form.username.data)
+        flash('Login OK')
+        return redirect(url_for('test'))
 
-    return render_template('test.html')
+    return render_template('login.html', form=form)
 
 @app.route('/hours', methods=['GET'])
 def hours_list():
     pass
-
 
 @app.route('/test')
 def hello_test():

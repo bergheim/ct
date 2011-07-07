@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 from flask import Flask, request, session, g, redirect, url_for, \
-     abort, render_template, flash
+     abort, render_template, flash, get_flashed_messages
 from flaskext.wtf import Form, TextField, Required, validators, PasswordField
 import ConfigParser
-app = Flask(__name__)
 
 class MethodRewriteMiddleware(object):
     """Middleware for HTTP method rewriting.
@@ -28,8 +27,8 @@ class User(object):
         self.username = username
         session['username'] = username
 
-    def __del__(self):
-        session.pop(username, None)
+    #def __del__(self):
+    #    session.pop(username, None)
 
 class UserForm(Form):
     username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
@@ -48,6 +47,20 @@ app.config['DEBUG'] = config.get("server", "debug")
 app.config['SECRET_KEY'] = config.get("server", "secret_key")
 app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
 
+def valid_user():
+    if 'username' in session:
+        return True
+    return False
+
+def redirect_if_invalid_user():
+    if not valid_user():
+        flash(request.url, 'redirect')
+        return redirect_to_login()
+    return True
+
+def redirect_to_login():
+        return redirect(url_for('login'))
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -55,16 +68,27 @@ def index():
 @app.route('/login', methods=['GET','POST'])
 def login():
     form = UserForm()
+    flashed = get_flashed_messages('redirect')
+    if 'redirect' in flashed:
+        form.redirect = flashed['redirect']
     if request.method == 'POST' and form.validate():
-        user = User(form.username.data)
+        g.user = User(form.username.data)
+        session['user'] = g.uesr
         flash('Login OK')
-        return redirect(url_for('show_user', username=user.username))
+        return redirect(url_for('show_user', username=g.user.username))
 
     return render_template('login.html', form=form)
+
+@app.before_request
+def before_request():
+    g.user = None
+    if 'username' in session:
+        g.user = session['user']
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
+    return redirect(url_for('index'))
 
 @app.route('/hours', methods=['GET'])
 def hours_list():
@@ -72,7 +96,7 @@ def hours_list():
 
 @app.route('/test')
 def hello_test():
-    return render_template('test.html')
+    return render_template('test.html') if valid_user() else redirect_to_login()
 
 @app.route('/user/<username>')
 def show_user(username):

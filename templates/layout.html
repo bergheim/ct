@@ -22,15 +22,22 @@
             <li>
                 <a href="/">home</a>
             </li>
+            {% if not session.username %}
             <li>
-                <a href="/login">login</a>
+                <a href="/login">logg på</a>
             </li>
+            {% else %}
+            <li>
+            <a href="/logout">logg av {{ session.username }}</a>
+            </li>
+            {% endif %}
             <li>
                 <a href="/test">test</a>
             </li>
         </ul>
     </div>
 </div>
+
   <div data-role="content" id="content">{% block content %}{% endblock %}</div>
   <div data-role="footer" id="footer">
     {% block footer %}

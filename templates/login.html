@@ -3,21 +3,16 @@
 
 {% block content %}
 
-<div id="stylized" class="myform">
+{% from "_formhelpers.html" import render_field, render_css_field %}
+<div id="login">
     <form id="form" name="form" method="post" action="/login">
         {{ form.hidden_tag() }}
         <h1>Login form</h1>
         <p>Testsak, mest for aa sjekke flask++</p>
 
-        <label>Brukernavn
-            <span class="small">Skriv inn ditt brukernavn</span>
-        </label>
-        <input type="text" name="username" id="username" />
-
-        <label>Passord
-            <span class="small">Minimum 64 tegn</span>
-        </label>
-        <input type="text" name="password" id="password" />
+        {{ render_css_field(form.username)}}
+        <div class="spacer"></div>
+        {{ render_css_field(form.password)}}
 
         <div class="spacer"></div>
         <button type="submit">Log på</button>

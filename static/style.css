@@ -9,37 +9,33 @@ body{
     font-size:12px;
 }
 .spacer{clear:both; height:1px;}
-.myform{
+div#login{
     margin:0 auto;
     width:400px;
     padding:14px;
-}
-
-/* ----------- stylized ----------- */
-#stylized{
     border:solid 2px #ccc;
     background:#eee;
 }
-#stylized h2 {
+div#login h2 {
     font-size:14px;
     font-weight:bold;
     margin-bottom:8px;
 }
-#stylized p{
+div#login p{
     font-size:11px;
     color:#666666;
     margin-bottom:20px;
     border-bottom:solid 1px #ccc;
     padding-bottom:10px;
 }
-#stylized label{
+div#login label{
     display:block;
     font-weight:bold;
     text-align:right;
     width:140px;
     float:left;
 }
-#stylized .small{
+div#login .small{
     color:#666666;
     display:block;
     font-size:11px;
@@ -47,7 +43,7 @@ body{
     text-align:right;
     width:140px;
 }
-#stylized input{
+div#login input{
     float:left;
     font-size:12px;
     padding:4px 2px;
@@ -55,7 +51,7 @@ body{
     width:200px;
     margin:2px 0 20px 10px;
 }
-#stylized button{
+div#login button{
     clear:both;
     margin-left:150px;
     width:125px;

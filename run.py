@@ -2,7 +2,7 @@
 
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
-from flaskext.wtf import Form, TextField, Required, validators
+from flaskext.wtf import Form, TextField, Required, validators, PasswordField
 import ConfigParser
 app = Flask(__name__)
 
@@ -28,7 +28,8 @@ class User(object):
         self.name = name
 
 class UserForm(Form):
-    username = TextField(u'Username', [validators.Length(min=4, max=25)])
+    username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
+    password = PasswordField(u'Passord', [], [], u'Minimum 4 tegn')
 
 class Hours(object):
     def __init__(self, id = None, name = None):
@@ -53,7 +54,7 @@ def login():
     if request.method == 'POST' and form.validate():
         user = User(form.username.data)
         flash('Login OK')
-        return redirect(url_for('test'))
+        return redirect(url_for('hello_test'))
 
     return render_template('login.html', form=form)
 

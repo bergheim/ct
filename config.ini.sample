@@ -1,5 +1,5 @@
 [server]
-host = 10.1.100.118
+host = localhost
 port = 5000
 debug = True
 secret_key = secret

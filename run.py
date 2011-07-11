@@ -6,6 +6,8 @@ from flaskext.wtf import Form, TextField, Required, validators, PasswordField
 import ConfigParser, random
 from flaskext.login import LoginManager, UserMixin, \
     login_required, login_user, logout_user
+from elixir import *
+from model import *
 
 class MethodRewriteMiddleware(object):
     """Middleware for HTTP method rewriting.
@@ -37,7 +39,16 @@ login_manager = LoginManager()
 login_manager.setup_app(app)
 login_manager.login_view = "login"
 
-class User(UserMixin):
+metadata.bind = config.get("server", "db")
+metadata.bind.echo = True
+
+setup_all()
+
+User(username='tsb', password='lol')
+User(username='test', password='lol')
+session.commit()
+
+class UserLogin(UserMixin):
     def __init__(self, id):
         self.id = id
         self.username = 'user' + str(id)
@@ -54,6 +65,12 @@ class Hours(object):
     def __init__(self, id = None, name = None):
         self.id = id
         self.name = name
+
+def valid_login(username, password):
+    if not User.query.filter_by(username=username,password=password).first():
+        return False
+
+    return True
 
 def valid_user():
     if 'username' in session:
@@ -77,13 +94,16 @@ def index():
 @app.route('/login', methods=['GET','POST'])
 def login():
     form = UserForm()
+    error = ""
     if request.method == 'POST' and form.validate():
-        g.user = User(form.username.data)
-        login_user(g.user)
-        #return redirect(
-        return redirect(request.args.get("next") or url_for('show_user', username=g.user.username))
+        if not valid_login(form.username.data, form.password.data):
+            error = "Feil brukernavn eller passord"
+        else:
+            g.user = UserLogin(form.username.data)
+            login_user(g.user)
+            return redirect(request.args.get("next") or url_for('show_user', username=g.user.username))
 
-    return render_template('login.html', form=form)
+    return render_template('login.html', form=form, error=error)
 
 @app.route('/logout')
 @login_required
@@ -100,7 +120,7 @@ def page_not_found(msg):
 def hours_list():
     return Response('<p>Change me</p>')
 
-@app.route('/test')
+@app.route('/test', methods=['GET', 'POST'])
 @login_required
 def hello_test():
     #return render_template('test.html') if valid_user() else redirect_to_login()
@@ -113,7 +133,7 @@ def show_user(username):
 
 @login_manager.user_loader
 def load_user(userid):
-    g.user = User(userid)
+    g.user = UserLogin(userid)
     return g.user
 
 if __name__ == '__main__':

@@ -3,3 +3,4 @@ host = localhost
 port = 5000
 debug = True
 secret_key = secret
+db = sqlite:///test.db

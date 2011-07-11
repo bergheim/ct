@@ -23,7 +23,6 @@ div#login h2 {
 }
 div#login p{
     font-size:11px;
-    color:#666666;
     margin-bottom:20px;
     border-bottom:solid 1px #ccc;
     padding-bottom:10px;
@@ -61,4 +60,8 @@ div#login button{
     color:#FFFFFF;
     font-size:11px;
     font-weight:bold;
+}
+
+.feedback {
+    color: red;
 }

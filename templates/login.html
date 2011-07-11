@@ -10,6 +10,10 @@
         <h1>Login form</h1>
         <p>Testsak, mest for å sjekke flask++</p>
 
+        {% if error: %}
+        <p class="feedback">{{ error }}</p>
+        {% endif %}
+
         {{ render_css_field(form.username)}}
         <div class="spacer"></div>
         {{ render_css_field(form.password)}}

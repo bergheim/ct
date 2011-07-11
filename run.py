@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-from flask import Flask, request, session, g, redirect, url_for, \
+from flask import Flask, request, Response, session, g, redirect, url_for, \
      abort, render_template, flash, get_flashed_messages
 from flaskext.wtf import Form, TextField, Required, validators, PasswordField
-import ConfigParser
+import ConfigParser, random
+from flaskext.login import LoginManager, UserMixin, \
+    login_required, login_user, logout_user
 
 class MethodRewriteMiddleware(object):
     """Middleware for HTTP method rewriting.
@@ -22,13 +24,27 @@ class MethodRewriteMiddleware(object):
                 method = method.encode('ascii', 'replace')
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
-class User(object):
-    def __init__(self, username = None):
-        self.username = username
-        session['username'] = username
 
-    #def __del__(self):
-    #    session.pop(username, None)
+
+app = Flask(__name__)
+config = ConfigParser.ConfigParser()
+config.read(["config.ini.sample", "config.ini"])
+app.config['DEBUG'] = config.get("server", "debug")
+app.config['SECRET_KEY'] = config.get("server", "secret_key")
+app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
+
+login_manager = LoginManager()
+login_manager.setup_app(app)
+login_manager.login_view = "login"
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+        self.username = 'user' + str(id)
+        self.password = self.username
+
+    def __repr__(self):
+        return "%d: %s/%s" % (self.id, self.username, self.password)
 
 class UserForm(Form):
     username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
@@ -38,14 +54,6 @@ class Hours(object):
     def __init__(self, id = None, name = None):
         self.id = id
         self.name = name
-
-
-app = Flask(__name__)
-config = ConfigParser.ConfigParser()
-config.read(["config.ini.sample", "config.ini"])
-app.config['DEBUG'] = config.get("server", "debug")
-app.config['SECRET_KEY'] = config.get("server", "secret_key")
-app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
 
 def valid_user():
     if 'username' in session:
@@ -59,51 +67,54 @@ def redirect_if_invalid_user():
     return True
 
 def redirect_to_login():
-        return redirect(url_for('login'))
+    return redirect(url_for('login'))
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
     form = UserForm()
-    flashed = get_flashed_messages('redirect')
-    if 'redirect' in flashed:
-        form.redirect = flashed['redirect']
     if request.method == 'POST' and form.validate():
         g.user = User(form.username.data)
-        session['user'] = g.uesr
-        flash('Login OK')
-        return redirect(url_for('show_user', username=g.user.username))
+        login_user(g.user)
+        #return redirect(
+        return redirect(request.args.get("next") or url_for('show_user', username=g.user.username))
 
     return render_template('login.html', form=form)
 
-@app.before_request
-def before_request():
-    g.user = None
-    if 'username' in session:
-        g.user = session['user']
-
 @app.route('/logout')
+@login_required
 def logout():
-    session.pop('username', None)
-    return redirect(url_for('index'))
+    logout_user()
+    return redirect(url_for('index', _external=True), 301)
+
+@app.errorhandler(401)
+def page_not_found(msg):
+    return Response('<p>Login failed</p>')
 
 @app.route('/hours', methods=['GET'])
+@login_required
 def hours_list():
-    pass
+    return Response('<p>Change me</p>')
 
 @app.route('/test')
+@login_required
 def hello_test():
-    return render_template('test.html') if valid_user() else redirect_to_login()
+    #return render_template('test.html') if valid_user() else redirect_to_login()
+    return render_template('test.html')
 
 @app.route('/user/<username>')
+@login_required
 def show_user(username):
-    if 'username' in session:
-        return render_template('user.html', username=username)
+    return render_template('user.html', username=username)
 
-    return redirect(url_for('login'))
+@login_manager.user_loader
+def load_user(userid):
+    g.user = User(userid)
+    return g.user
 
 if __name__ == '__main__':
     host = config.get("server", "host")

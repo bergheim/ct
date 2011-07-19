@@ -7,3 +7,4 @@ SQLAlchemy==0.7.1
 WTForms==0.6.3
 Werkzeug==0.6.2
 wsgiref==0.1.2
+-e git+git://github.com/alf/ct.git#egg=ct

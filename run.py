@@ -2,7 +2,7 @@
 
 from flask import Flask, request, Response, session, g, redirect, url_for, \
      abort, render_template, flash, get_flashed_messages
-from flaskext.wtf import Form, TextField, Required, validators, PasswordField
+from flaskext.wtf import Form, TextField, Required, validators, PasswordField, TextAreaField, DecimalField
 import ConfigParser, random
 from flaskext.login import LoginManager, UserMixin, \
     login_required, login_user, logout_user
@@ -61,10 +61,63 @@ class UserForm(Form):
     username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
     password = PasswordField(u'Passord', [], [], u'Minimum 4 tegn')
 
+class ActivityForm(Form):
+    hours = DecimalField()
+    notes = TextAreaField()
+
+    #todo: this should be one generic method
+    #def validate_existing_hours(form, field):
+    #    if field.data != fresh lookup:
+    #        raise ValidationError("Edited since you opened it")
+
+    #def __init__(self, id=0):
+    #    if id:
+    #        # fetch record
+    #        _existing_hours = 33
+    #        _existing_notes = "dsaf"
+
+
 class Hours(object):
     def __init__(self, id = None, name = None):
         self.id = id
         self.name = name
+
+class Activity(object):
+    projects = []
+    projects.append( {'name': 'Lunch', 'activity': [] } )
+    projects.append( {'name': 'Internprosjekt', 'activity': [] } )
+
+    projects[0]['activity'] = [
+            { 'hours': 4, 'note': 'ingen' },
+            { 'hours': 2, 'note': '' },
+            { 'hours': 8, 'note': '' },
+            { 'hours': 7, 'note': 'gjorde ditt, and then datt' },
+            { 'hours': 2, 'note': 'dro tidlig' },
+            { 'hours': 3, 'note': 'helgejobbing' }
+            ]
+
+    projects[1]['activity'] = [
+            { 'hours': 1, 'note': '' },
+            { 'hours': 2, 'note': '' },
+            { 'hours': 3, 'note': '' },
+            { 'hours': 4, 'note': '' },
+            { 'hours': 5, 'note': 'lol' },
+            { 'hours': 6, 'note': '' }
+            ]
+
+    #def __init__(self):
+    #    for p in self.projects:
+    #        activity = []
+    #        for day in xrange(1,7):
+    #            a = { 'hours': random.randint(0,7), 'note': "" }
+    #            if a['hours'] is not 0 and random.random() > 0.7:
+    #                a['note'] = 'random note'
+
+    #            activity.append(a)
+
+    #        p['activity'] = activity
+
+testAct = Activity()
 
 def valid_login(username, password):
     if not User.query.filter_by(username=username,password=password).first():
@@ -119,6 +172,54 @@ def page_not_found(msg):
 @login_required
 def hours_list():
     return Response('<p>Change me</p>')
+
+@app.route('/view/day/', methods=['GET'])
+@login_required
+def view_day():
+    return view_day(0) #todo: return today date
+
+@app.route('/view/day/<int:date>', methods=['GET'])
+@login_required
+def view_day(date):
+    return render_template('view_day.html', projects=testAct.projects)
+
+@app.route('/view/week', methods=['GET'])
+@login_required
+def view_week():
+    projects = testAct.projects
+
+    return render_template('view_week.html', projects=projects, random=random.randint(1,1000))
+
+@app.route('/view/month', methods=['GET'])
+@login_required
+def view_month():
+    import calendar
+    import datetime
+
+    now = datetime.datetime.now()
+
+    c = calendar.LocaleHTMLCalendar(calendar.MONDAY)
+    calendar_month = c.formatmonth(now.year, now.month)
+    calendar_month = c.monthdays2calendar(now.year, now.month)
+
+    calendar_header = c.formatweekheader()
+
+    return render_template('view_month.html', calendar=calendar_month, calendar_header=calendar_header)
+
+@app.route('/activity/<id>', methods=['GET', 'POST'])
+@login_required
+def edit_activity(id):
+    projects = testAct.projects
+    form = ActivityForm()
+
+    #oldData = testAct.projects[id]
+    if request.method == 'POST' and form.validate():
+        #if oldData.notes != testAct.notes and oldData.hours != oldData.hours:
+        #    error = "Edited after you - aborting"
+        #else:
+        return redirect(request.args.get("next") or url_for('view_week'))
+
+    return render_template('activity.html', form=form, id=id)
 
 @app.route('/test', methods=['GET', 'POST'])
 @login_required

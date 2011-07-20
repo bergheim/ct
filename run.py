@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 
+import calendar
+import datetime
+from collections import defaultdict
+
 from flask import Flask, request, Response, session, g, redirect, url_for, \
-     abort, render_template, flash, get_flashed_messages
-from flaskext.wtf import Form, TextField, Required, validators, PasswordField, TextAreaField, DecimalField
+     abort, render_template, flash, get_flashed_messages, current_app
+from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField
 import ConfigParser, random
 from flaskext.login import LoginManager, UserMixin, \
     login_required, login_user, logout_user
-from elixir import *
-from model import *
+from ct.apis import RangeAPI
+
+def debug():
+    assert current_app.debug == False, "Debug:"
 
 class MethodRewriteMiddleware(object):
     """Middleware for HTTP method rewriting.
@@ -39,15 +45,6 @@ login_manager = LoginManager()
 login_manager.setup_app(app)
 login_manager.login_view = "login"
 
-metadata.bind = config.get("server", "db")
-metadata.bind.echo = True
-
-setup_all()
-
-User(username='tsb', password='lol')
-User(username='test', password='lol')
-session.commit()
-
 class UserLogin(UserMixin):
     def __init__(self, id):
         self.id = id
@@ -75,6 +72,26 @@ class ActivityForm(Form):
     #        # fetch record
     #        _existing_hours = 33
     #        _existing_notes = "dsaf"
+
+class RangeForm(Form):
+    @classmethod
+    def default_from_date(cls):
+        return datetime.date.today().replace(day=1)
+
+    @classmethod
+    def default_to_date(cls):
+        today = datetime.date.today()
+        _, ndays = calendar.monthrange(today.year, today.month)
+        return today.replace(day=ndays)
+
+    from_date = DateField(
+        u'Fra dato',
+        default=lambda: RangeForm.default_from_date(),
+        format='%d.%m.%Y')
+    to_date = DateField(
+        u'Til dato',
+        default=lambda: RangeForm.default_to_date(),
+        format='%d.%m.%Y')
 
 
 class Hours(object):
@@ -144,16 +161,25 @@ def redirect_to_login():
 def index():
     return render_template('index.html')
 
+def do_ct_login(form):
+    server = config.get("server", "ct_url")
+    ct = RangeAPI(server)
+    logged_in = ct.login(form.username.data, form.password.data)
+    if logged_in:
+        session['user'] = form.username.data
+        session['ct'] = ct
+
+    return logged_in
+
 @app.route('/login', methods=['GET','POST'])
 def login():
     form = UserForm()
     error = ""
     if request.method == 'POST' and form.validate():
-        if not valid_login(form.username.data, form.password.data):
-            error = "Feil brukernavn eller passord"
-        else:
-            g.user = UserLogin(form.username.data)
-            login_user(g.user)
+        logged_in = do_ct_login(form)
+        g.user = UserLogin(form.username.data)
+        login_user(g.user)
+        if logged_in:
             return redirect(request.args.get("next") or url_for('show_user', username=g.user.username))
 
     return render_template('login.html', form=form, error=error)
@@ -175,8 +201,8 @@ def hours_list():
 
 @app.route('/view/day/', methods=['GET'])
 @login_required
-def view_day():
-    return view_day(0) #todo: return today date
+def view_today():
+    return view_day(datetime.date.today()) #todo: return today date
 
 @app.route('/view/day/<int:date>', methods=['GET'])
 @login_required
@@ -193,8 +219,8 @@ def view_week():
 @app.route('/view/month', methods=['GET'])
 @login_required
 def view_month():
-    import calendar
-    import datetime
+    ct = session['ct']
+    form = RangeForm(formdata=request.args)
 
     now = datetime.datetime.now()
 
@@ -203,6 +229,15 @@ def view_month():
     calendar_month = c.monthdays2calendar(now.year, now.month)
 
     calendar_header = c.formatweekheader()
+
+    app.logger.debug(form.to_date.data)
+
+    activities = ct.get_activities(form.from_date.data, form.to_date.data)
+
+
+    days = defaultdict(lambda: [])
+    for activity in activities:
+        days[activity.day].append(activity)
 
     return render_template('view_month.html', calendar=calendar_month, calendar_header=calendar_header)
 
@@ -236,6 +271,7 @@ def show_user(username):
 def load_user(userid):
     g.user = UserLogin(userid)
     return g.user
+
 
 if __name__ == '__main__':
     host = config.get("server", "host")

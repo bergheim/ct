@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block title %}Week view{% endblock %}
+
+{% block content %}
+
+<table class="weekview">
+<thead>
+<tr>
+    <th class="name"><a href="/project" data-role="button">Add project</a></th>
+    <th>M</th>
+    <th>T</th>
+    <th>W</th>
+    <th>T</th>
+    <th>F</th>
+    <th>W</th>
+</tr>
+</thead>
+{% for project in projects: %}
+<tr class="project">
+    <td class="name">{{ project.name }}</td>
+    {% for activity in project.activity %}
+    <td>
+        <a href="/activity/{{ random }}" data-role="button">
+            {{ activity.hours }}
+        {% if activity.note: %}
+        *
+        {% endif %}
+        </a>
+    </td>
+    {% endfor %}
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
+
+

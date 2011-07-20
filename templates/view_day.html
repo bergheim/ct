@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Day view{% endblock %}
+
+{% block content %}
+
+<table class="dayview">
+<tr>
+    <th>Project</th>
+    <th>Hours</th>
+    <th>Notes</th>
+</tr>
+
+{% for project in projects: %}
+<tr>
+    <td>{{ project.name }}</td>
+    <td>{{ project.hours }}</td>
+    <td>{{ project.notes }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
+

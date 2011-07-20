@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}Month view{% endblock %}
+
+{% block content %}
+
+<table class="monthview">
+{{ calendar_header|safe }}
+
+{% for week in calendar: %}
+<tr>
+{% for monthday, weekday in week: %}
+
+<td>
+{% if monthday > 0: %}
+<a href="/view/day/{{ monthday }}" class="day" data-role="button">{{ monthday }}</div>
+{% endif %}
+</td>
+
+{% endfor %}
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

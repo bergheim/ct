@@ -2,6 +2,7 @@
 
 import calendar
 import datetime
+import time
 import operator
 import pprint
 from collections import defaultdict
@@ -219,12 +220,22 @@ def hours_list():
 @app.route('/view/day/', methods=['GET'])
 @login_required
 def view_today():
-    return view_day(datetime.date.today()) #todo: return today date
+    return view_day(str(datetime.date.today())) #todo: return today date
 
-@app.route('/view/day/<int:date>', methods=['GET'])
+@app.route('/view/day/<date>', methods=['GET'])
 @login_required
 def view_day(date):
-    return render_template('view_day.html', projects=testAct.projects)
+    bsession = request.environ['beaker.session']
+    projects = bsession['projects']
+    ct = bsession['ct']
+
+    date = time.strptime(date, "%Y-%m-%d")
+    today = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
+    next_day = today + datetime.timedelta(1)
+
+    activities = ct.get_activities(today, next_day)
+
+    return render_template('view_day.html', projects=projects)
 
 @app.route('/view/week', methods=['GET'])
 @login_required

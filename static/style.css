@@ -102,3 +102,48 @@ table.weekview tr.project:last-child td,
 table.weekview:last-child td {
     border-bottom: 0;
 }
+
+table.monthview {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+table.monthview td,
+table.monthview th {
+    display: block;
+    float: left;
+    width: 4em;
+    height: 3em;
+    border: 1px solid black;
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
+
+table.monthview td div.date {
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+table.monthview td div.date div.hours {
+    margin-left: 1em;
+}
+
+.divisor {
+    bottom: 0;
+    border-top: 1px solid black;
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    background-color: green;
+}
+
+.weekend div.date:first-child {
+    height: 50%;
+
+}
+.weekend div.date:last-child {
+    top: 50%;
+    height: 50%;
+}
+.weekend .hours {
+    float: right;
+}

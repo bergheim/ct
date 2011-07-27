@@ -295,9 +295,24 @@ def view_month(month):
         work_month[week] = []
         for day_month, day_week in calendar_month[week]:
             if day_month == 0:
-                work_month[week].append({ "day": day_month, "weekday": day_week, "activities": None })
+                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0 })
+                #work_month[week].append({ "day": day_month, "weekday": day_week, "activities": None })
+            elif day_week == 6:
+                continue
             else:
-                work_month[week].append({ "day": day_month, "weekday": day_week, "activities": days[datetime.date(year, month, day_month)] })
+                hours = 0
+                for activity in days[datetime.date(year, month, day_month)]:
+                    hours += activity.duration
+
+                if day_week == 5 and [day_month+1, day_week+1] in calendar_month[week]:
+                    hours_sunday = 0
+                    for activity in days[datetime.date(year, month, day_month+1)]:
+                        hours_sunday += activity.duration
+
+                    work_month[week].append({ "day": day_month, "day_sunday": day_month+1, "weekday": day_week, "hours": hours, "hours_sunday": hours_sunday })
+                else:
+                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours })
+                #work_month[week].append({ "day": day_month, "weekday": day_week, "activities": days[datetime.date(year, month, day_month)] })
 
     work_month = sorted(work_month.iteritems(), key=operator.itemgetter(0))
 

@@ -9,21 +9,34 @@
 </div>
 
 <table class="monthview">
+<thead>
+    <tr>
+        <th>Uke</th>
+        <th>M</th>
+        <th>T</th>
+        <th>O</th>
+        <th>T</th>
+        <th>F</th>
+        <th>H</th>
+    </tr>
+</thead>
 {% for weeknumber, weekdata in calendar: %}
 <tr>
     <td>
-        Uke: <a href="/view/week/{{ weeknumber }}">{{ weeknumber }}</a>.
+        <a href="/view/week/{{ weeknumber }}">{{ weeknumber }}</a>.
     </td>
 {% for day in weekdata: %}
 <td>
 {% if day.day > 0: %}
-<div><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a>
-    <ul>
-{% for activity in day.activities: %}
-<li>{{ activity.project_name }} ({{ activity.duration }})</li>
-{% endfor %}
-</ul>
-</div>
+    {% if loop.last: %}
+        <!--div class="divisor"></div-->
+        <div class="weekend">
+            <div class="date"><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
+            <div class="date"><a href="/view/day/{{ day.day_sunday }}" class="day" data-role="button">{{ day.day_sunday }}</a><div class="hours">{{ day.hours_sunday }}</div></div>
+        </div>
+    {% else %}
+        <div class="date"><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
+    {% endif %}
 {% endif %}
 </td>
 

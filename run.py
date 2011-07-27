@@ -13,8 +13,7 @@ from flaskext.wtf import Form, DateField, TextField, Required, validators, Passw
 import ConfigParser, random
 #from flaskext.login import LoginManager, UserMixin, \
 #    login_required, login_user, logout_user
-from simplekv.memory import DictStore
-from flaskext.kvsession import KVSessionExtension, KVSession
+from beaker.middleware import SessionMiddleware
 from ct.apis import RangeAPI
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -44,13 +43,18 @@ class MethodRewriteMiddleware(object):
 config = ConfigParser.ConfigParser()
 config.read(["config.ini.sample", "config.ini"])
 
+session_opts = {
+#    'session.type': 'ext:memcached',
+#    'session.url': '127.0.0.1:11211',
+    'session.data_dir': './cache',
+}
+
 app = Flask(__name__)
 app.config['DEBUG'] = config.get("server", "debug")
 app.config['SECRET_KEY'] = config.get("server", "secret_key")
 
-store = DictStore()
-kvsession = KVSessionExtension(store, app)
 #app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
+app.wsgi_app = SessionMiddleware(app.wsgi_app, session_opts)
 
 #login_manager = LoginManager()
 #login_manager.setup_app(app)
@@ -104,7 +108,8 @@ class User():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not valid_user() or not session['ct'].valid_session():
+        bsession = request.environ['beaker.session']
+        if not valid_user() or not bsession.has_key('ct') or not bsession['ct'].valid_session():
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
@@ -163,13 +168,15 @@ def redirect_to_login():
 
 def do_ct_login(username, password):
     server = config.get("server", "ct_url")
+    bsession = request.environ['beaker.session']
     ct = RangeAPI(server)
     logged_in = ct.login(username, password)
     if logged_in:
         session['user'] = username
-        session['ct'] = ct
+        bsession['ct'] = ct
         #FIXME: for some reason this does not work
-        #session['projects'] = ct.get_projects()
+        bsession['projects'] = ct.get_projects()
+        bsession.save()
 
     return logged_in
 
@@ -196,7 +203,7 @@ def login():
 @app.route('/logout')
 def logout():
     print session
-    logout_user()
+    #logout_user()
     session.clear()
     return redirect(url_for('index', _external=True), 301)
 
@@ -247,7 +254,9 @@ def view_current_month():
 @app.route('/view/month/<month>', methods=['GET'])
 @login_required
 def view_month(month):
-    ct = session['ct']
+    bsession = request.environ['beaker.session']
+    ct = bsession['ct']
+    tmp_projects = bsession['projects']
     #form = RangeForm(formdata=request.args)
 
     #now = datetime.datetime.now()
@@ -255,6 +264,11 @@ def view_month(month):
     #calendar_month = c.formatmonth(now.year, now.month)
     #calendar_month = c.monthdays2calendar(now.year, now.month)
     #calendar_header = c.formatweekheader()
+
+    projects = {}
+
+    for project in tmp_projects:
+        projects[project.id] = project
 
 
     year, month = month.split(".")
@@ -270,14 +284,11 @@ def view_month(month):
 
     calendar_month = generate_calendar_month(date)
 
-
     activities = ct.get_activities(date, todate)
     days = defaultdict(lambda: [])
     for activity in activities:
+        activity.project_name = projects[activity.project_id].name
         days[activity.day].append(activity)
-
-
-    pp.pprint(session)
 
     work_month = {}
     for week in calendar_month:

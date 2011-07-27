@@ -18,9 +18,11 @@
 <td>
 {% if day.day > 0: %}
 <div><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a>
+    <ul>
 {% for activity in day.activities: %}
-{{ activity}}
+<li>{{ activity.project_name }} ({{ activity.duration }})</li>
 {% endfor %}
+</ul>
 </div>
 {% endif %}
 </td>

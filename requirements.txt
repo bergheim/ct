@@ -1,8 +1,11 @@
+Beaker==1.5.4
 Flask==0.7.2
-Flask-Login==0.1
 Flask-WTF==0.5.2
 Jinja2==2.5.5
 WTForms==0.6.3
 Werkzeug==0.6.2
+ct==0.3pre
+itsdangerous==0.11
+lxml==2.3
+simplekv==0.5
 wsgiref==0.1.2
--e git+git://github.com/alf/ct.git#egg=ct

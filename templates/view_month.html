@@ -3,16 +3,25 @@
 
 {% block content %}
 
+<div>
+    <a href="/view/month/{{ prev_month }}">forrige</a>
+    <a href="/view/month/{{ next_month }}">neste</a>
+</div>
+
 <table class="monthview">
-{{ calendar_header|safe }}
-
-{% for week in calendar: %}
+{% for weeknumber, weekdata in calendar: %}
 <tr>
-{% for monthday, weekday in week: %}
-
+    <td>
+        Uke: <a href="/view/week/{{ weeknumber }}">{{ weeknumber }}</a>.
+    </td>
+{% for day in weekdata: %}
 <td>
-{% if monthday > 0: %}
-<a href="/view/day/{{ monthday }}" class="day" data-role="button">{{ monthday }}</div>
+{% if day.day > 0: %}
+<div><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a>
+{% for activity in day.activities: %}
+{{ activity}}
+{% endfor %}
+</div>
 {% endif %}
 </td>
 

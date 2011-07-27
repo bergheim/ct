@@ -23,14 +23,10 @@
 <h1>CurrentTime</h1>
     <div>
         <ul>
-            {% if not g.user %}
-            <li><a href="/login">logg på</a></li>
-            {% else %}
-            <li><a href="/logout" rel="external">logg av {{ g.user.username }}</a></li>
+            <li><a href="/logout" rel="external">logg av {{ session.user }}</a></li>
             <li><a href="/">home</a></li>
             <li><a href="/test">test</a></li>
             <li><a href="/view/month">month view</a></li>
-            {% endif %}
         </ul>
     </div>
 </div>

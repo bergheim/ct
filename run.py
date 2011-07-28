@@ -264,16 +264,25 @@ def view_today():
 @login_required
 def view_day(date):
     bsession = request.environ['beaker.session']
-    projects = bsession['projects']
     ct = bsession['ct']
+    tmp_projects = bsession['projects']
+    projects = {}
 
-    date = time.strptime(date, "%Y-%m-%d")
+    for project in tmp_projects:
+        projects[project.id] = project
+
+    date = time.strptime(date, "%Y.%m.%d")
     today = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
+    prev_day = today - datetime.timedelta(1)
     next_day = today + datetime.timedelta(1)
 
     activities = ct.get_activities(today, next_day)
+    todays_activities = []
+    for activity in activities:
+        activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
+        todays_activities.append(activity)
 
-    return render_template('view_day.html', projects=projects)
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day)
 
 @app.route('/view/week', methods=['GET'])
 @login_required
@@ -294,10 +303,15 @@ def view_week(week):
     for project in tmp_projects:
         projects[project.id] = project
 
-    week = week + "-1"
-    date = time.strptime(week, "%Y-%W-%w")
+    week = week + ".1"
+    date = time.strptime(week, "%Y.%W.%w")
     monday = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
     sunday = monday + datetime.timedelta(7)
+
+    prev_week = monday - datetime.timedelta(7)
+    prev_week = "%s.%02d" % (prev_week.year, int(prev_week.isocalendar()[1]))
+    next_week = monday + datetime.timedelta(7)
+    next_week = "%s.%02d" % (next_week.year, int(next_week.isocalendar()[1]))
 
     activities = ct.get_activities(monday, sunday)
     days = defaultdict(lambda: [])
@@ -323,7 +337,7 @@ def view_week(week):
                 project[day] = None
         #project = sorted(project.iteritems(), key=operator.itemgetter(0))
 
-    return render_template('view_week.html', projects=projects_project_indexed, random=random.randint(1,1000))
+    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week)
 
 
 @app.route('/view/month', methods=['GET'])
@@ -383,9 +397,9 @@ def view_month(month):
                         hours_sunday += activity.duration
 
                     work_month[week].append({ "day": day_month, "day_sunday": day_month+1, "weekday": day_week, "hours": hours,
-                        "hours_sunday": hours_sunday, "link": "%s-%s-%s" % (year, month, day_month), "link_sunday": "%s-%s-%s" % (year, month, day_month+1) })
+                        "hours_sunday": hours_sunday, "link": "%s.%s.%s" % (year, month, day_month), "link_sunday": "%s.%s.%s" % (year, month, day_month+1) })
                 else:
-                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": "%s-%s-%s" % (year, month, day_month) })
+                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": "%s.%s.%s" % (year, month, day_month) })
 
     work_month = sorted(work_month.iteritems(), key=operator.itemgetter(0))
 

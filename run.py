@@ -255,7 +255,7 @@ def page_not_found(msg):
 def hours_list():
     return Response('<p>Change me</p>')
 
-@app.route('/view/day/', methods=['GET'])
+@app.route('/view/day', methods=['GET'])
 @login_required
 def view_today():
     return view_day(str(datetime.date.today())) #todo: return today date
@@ -278,9 +278,10 @@ def view_day(date):
 @app.route('/view/week', methods=['GET'])
 @login_required
 def view_current_week():
-    projects = testAct.projects
+    now = datetime.datetime.now()
+    date = "%s.%s"  % (now.year, now.isocalendar()[1])
+    return view_week(date)
 
-    return render_template('view_week.html', projects=projects, random=random.randint(1,1000))
 
 @app.route('/view/week/<week>', methods=['GET'])
 @login_required

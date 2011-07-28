@@ -20,10 +20,10 @@
         <th>H</th>
     </tr>
 </thead>
-{% for weeknumber, weekdata in calendar: %}
+{% for (year, weeknumber), weekdata in calendar: %}
 <tr>
     <td>
-        <a href="/view/week/{{ weeknumber }}">{{ weeknumber }}</a>.
+        <a href="/view/week/{{ year }}-{{ weeknumber }}">{{ weeknumber }}</a>.
     </td>
 {% for day in weekdata: %}
 <td>
@@ -31,11 +31,11 @@
     {% if loop.last: %}
         <!--div class="divisor"></div-->
         <div class="weekend">
-            <div class="date"><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
-            <div class="date"><a href="/view/day/{{ day.day_sunday }}" class="day" data-role="button">{{ day.day_sunday }}</a><div class="hours">{{ day.hours_sunday }}</div></div>
+            <div class="date"><a href="/view/day/{{ day.link }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
+            <div class="date"><a href="/view/day/{{ day.link_sunday }}" class="day" data-role="button">{{ day.day_sunday }}</a><div class="hours">{{ day.hours_sunday }}</div></div>
         </div>
     {% else %}
-        <div class="date"><a href="/view/day/{{ day.day }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
+        <div class="date"><a href="/view/day/{{ day.link }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
     {% endif %}
 {% endif %}
 </td>

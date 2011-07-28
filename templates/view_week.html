@@ -17,7 +17,7 @@
 </thead>
 {% for project in projects: %}
 <tr class="project">
-    <td class="name">{{ project.name }}</td>
+    <td class="name">{{ project.project_name }}</td>
     {% for activity in project.activity %}
     <td>
         <a href="/activity/{{ random }}" data-role="button">

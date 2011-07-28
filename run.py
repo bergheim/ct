@@ -10,7 +10,7 @@ from functools import wraps
 
 from flask import Flask, request, Response, session, g, redirect, url_for, \
      abort, render_template, flash, get_flashed_messages, current_app
-from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField
+from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField, HiddenField
 import ConfigParser, random
 #from flaskext.login import LoginManager, UserMixin, \
 #    login_required, login_user, logout_user
@@ -18,6 +18,41 @@ from beaker.middleware import SessionMiddleware
 from ct.apis import RangeAPI
 
 pp = pprint.PrettyPrinter(indent=4)
+
+from urlparse import urlparse
+
+
+def is_safe_url(target):
+    """Only redirect to URLs on the same host."""
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(target)
+    return test_url.scheme in ('http', 'https') and \
+           ref_url.netloc == test_url.netloc
+
+
+def get_redirect_target():
+    """Returns the redirect target we want to use.  Tries the 'next'
+    parameter from GET and falls back to the referrer from the request.
+    """
+    for target in request.args.get('next'), request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return target
+
+
+class RedirectForm(Form):
+    next = HiddenField()
+
+    def __init__(self, *args, **kwargs):
+        Form.__init__(self, *args, **kwargs)
+        if not self.next.data:
+            self.next.data = get_redirect_target() or ''
+
+    def redirect(self, endpoint='index', **values):
+        if is_safe_url(self.next.data):
+            return redirect(self.next.data)
+        return redirect(get_redirect_target(endpoint, **values))
 
 def debug():
     assert current_app.debug == False, "Debug:"
@@ -76,7 +111,8 @@ def generate_calendar_month(date):
         if weekday == 0:
             weekday = 1
 
-        weeknumbers.append(datetime.date(year, month, weekday).isocalendar()[1])
+        tweek = datetime.date(year, month, weekday).isocalendar()
+        weeknumbers.append((tweek[0], tweek[1]))
 
 
     cal = {}
@@ -115,7 +151,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-class UserForm(Form):
+class UserForm(RedirectForm):
     username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
     password = PasswordField(u'Passord', [], [], u'Minimum 4 tegn')
 
@@ -189,15 +225,18 @@ def index():
 @app.route('/login', methods=['GET','POST'])
 def login():
     form = UserForm()
+    if request.args.has_key("next"):
+        form.next_page = HiddenField(default=request.args.get("next"))
+
     error = ""
-    if request.method == 'POST' and form.validate():
+    if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
         logged_in = do_ct_login(username, password)
         g.user = User(username)
         #login_user(g.user)
         if logged_in:
-            return redirect(request.args.get("next") or url_for('show_user', username=username))
+            return form.redirect(endpoint=url_for('show_user', username=username))
 
     return render_template('login.html', form=form, error=error)
 
@@ -244,15 +283,27 @@ def view_current_week():
 
     return render_template('view_week.html', projects=projects, random=random.randint(1,1000))
 
-@app.route('/view/week/<int:week>', methods=['GET'])
+@app.route('/view/week/<week>', methods=['GET'])
 @login_required
 def view_week(week):
-    activities = ct.get_activities(form.from_date.data, form.to_date.data)
+    bsession = request.environ['beaker.session']
+    projects = bsession['projects']
+    ct = bsession['ct']
+
+    week = week + "-1"
+    date = time.strptime(week, "%Y-%W-%w")
+    monday = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
+    sunday = monday + datetime.timedelta(7)
+
+    activities = ct.get_activities(monday, sunday)
     days = defaultdict(lambda: [])
     for activity in activities:
+        activity.project_name = projects[activity.project_id].name
         days[activity.day].append(activity)
 
-    return render_template('view_week.html', projects=[], random=random.randint(1,1000))
+    projects = sorted(days.iteritems(), key=operator.itemgetter(0))
+
+    return render_template('view_week.html', projects=projects, random=random.randint(1,1000))
 
 
 @app.route('/view/month', methods=['GET'])
@@ -268,14 +319,6 @@ def view_month(month):
     bsession = request.environ['beaker.session']
     ct = bsession['ct']
     tmp_projects = bsession['projects']
-    #form = RangeForm(formdata=request.args)
-
-    #now = datetime.datetime.now()
-    #c = calendar.LocaleHTMLCalendar(calendar.MONDAY)
-    #calendar_month = c.formatmonth(now.year, now.month)
-    #calendar_month = c.monthdays2calendar(now.year, now.month)
-    #calendar_header = c.formatweekheader()
-
     projects = {}
 
     for project in tmp_projects:
@@ -286,12 +329,12 @@ def view_month(month):
     year = int(year)
     month = int(month)
     date = datetime.date(year, month, 1)
+    todate = date + datetime.timedelta(calendar.monthrange(year, month)[1]-1)
     prev_month = date - datetime.timedelta(1)
     prev_month = "%s.%02d" % (prev_month.year, int(prev_month.month))
     next_month = date + datetime.timedelta(40)
     next_month = "%s.%02d" % (next_month.year, int(next_month.month))
 
-    todate = date + datetime.timedelta(calendar.monthrange(year, month)[1]-1)
 
     calendar_month = generate_calendar_month(date)
 
@@ -306,8 +349,7 @@ def view_month(month):
         work_month[week] = []
         for day_month, day_week in calendar_month[week]:
             if day_month == 0:
-                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0 })
-                #work_month[week].append({ "day": day_month, "weekday": day_week, "activities": None })
+                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0, "link": "%s-%s-%s" % (year, month, day_month) })
             elif day_week == 6:
                 continue
             else:
@@ -320,10 +362,10 @@ def view_month(month):
                     for activity in days[datetime.date(year, month, day_month+1)]:
                         hours_sunday += activity.duration
 
-                    work_month[week].append({ "day": day_month, "day_sunday": day_month+1, "weekday": day_week, "hours": hours, "hours_sunday": hours_sunday })
+                    work_month[week].append({ "day": day_month, "day_sunday": day_month+1, "weekday": day_week, "hours": hours,
+                        "hours_sunday": hours_sunday, "link": "%s-%s-%s" % (year, month, day_month), "link_sunday": "%s-%s-%s" % (year, month, day_month+1) })
                 else:
-                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours })
-                #work_month[week].append({ "day": day_month, "weekday": day_week, "activities": days[datetime.date(year, month, day_month)] })
+                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": "%s-%s-%s" % (year, month, day_month) })
 
     work_month = sorted(work_month.iteritems(), key=operator.itemgetter(0))
 

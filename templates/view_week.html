@@ -15,16 +15,17 @@
     <th>W</th>
 </tr>
 </thead>
-{% for project in projects: %}
+{% for name, project in projects.iteritems() %}
 <tr class="project">
-    <td class="name">{{ project.project_name }}</td>
-    {% for activity in project.activity %}
+    <td class="name">{{ name }}</td>
+    {% for day, activity in project.iteritems() %}
     <td>
-        <a href="/activity/{{ random }}" data-role="button">
-            {{ activity.hours }}
-        {% if activity.note: %}
-        *
-        {% endif %}
+        <a href="/activity/{{ activity.day }}/{{ activity.project_id }}" data-role="button">
+            {% if activity.duration %}
+            {{ activity.duration }}
+            {% else %}
+            0
+            {% endif %}
         </a>
     </td>
     {% endfor %}

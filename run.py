@@ -40,7 +40,6 @@ def get_redirect_target():
         if is_safe_url(target):
             return target
 
-
 class RedirectForm(Form):
     next = HiddenField()
 
@@ -52,7 +51,7 @@ class RedirectForm(Form):
     def redirect(self, endpoint='index', **values):
         if is_safe_url(self.next.data):
             return redirect(self.next.data)
-        return redirect(get_redirect_target(endpoint, **values))
+        return redirect(get_redirect_target() or url_for(endpoint, **values))
 
 def debug():
     assert current_app.debug == False, "Debug:"
@@ -287,8 +286,12 @@ def view_current_week():
 @login_required
 def view_week(week):
     bsession = request.environ['beaker.session']
-    projects = bsession['projects']
     ct = bsession['ct']
+    tmp_projects = bsession['projects']
+    projects = {}
+
+    for project in tmp_projects:
+        projects[project.id] = project
 
     week = week + "-1"
     date = time.strptime(week, "%Y-%W-%w")
@@ -298,12 +301,28 @@ def view_week(week):
     activities = ct.get_activities(monday, sunday)
     days = defaultdict(lambda: [])
     for activity in activities:
-        activity.project_name = projects[activity.project_id].name
+        activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
         days[activity.day].append(activity)
 
     projects = sorted(days.iteritems(), key=operator.itemgetter(0))
 
-    return render_template('view_week.html', projects=projects, random=random.randint(1,1000))
+    projects_project_indexed = {}
+    for day, activities in projects:
+        for activity in activities:
+            key = activity.project_name
+            if not projects_project_indexed.has_key(key):
+                projects_project_indexed[key] = {}
+
+            projects_project_indexed[key][day.weekday()] = activity
+
+    for name, project in projects_project_indexed.iteritems():
+        for day in range(6):
+            #if day not in [d for d in project]:
+            if day not in project.keys():
+                project[day] = None
+        #project = sorted(project.iteritems(), key=operator.itemgetter(0))
+
+    return render_template('view_week.html', projects=projects_project_indexed, random=random.randint(1,1000))
 
 
 @app.route('/view/month', methods=['GET'])

@@ -10,12 +10,15 @@
 <thead>
 <tr>
     <th class="name"><a href="/project" data-role="button">Add project</a></th>
-    <th>M</th>
-    <th>T</th>
-    <th>W</th>
-    <th>T</th>
-    <th>F</th>
-    <th>W</th>
+    <th><a href="{{ day_links[0] }}">M</a></th>
+    <th><a href="{{ day_links[1] }}">T</a></th>
+    <th><a href="{{ day_links[2] }}">W</a></th>
+    <th><a href="{{ day_links[3] }}">T</a></th>
+    <th><a href="{{ day_links[4] }}">F</a></th>
+    <th>
+        <a href="{{ day_links[5] }}">W</a> /
+        <a href="{{ day_links[6] }}">E</a>
+    </th>
 </tr>
 </thead>
 {% for name, project in projects.iteritems() %}

@@ -319,6 +319,11 @@ def view_week(week):
     next_week = monday + datetime.timedelta(7)
     next_week = "%s-%02d" % (next_week.year, int(next_week.isocalendar()[1]))
 
+    day_links = []
+    for day in xrange(7):
+        day_link = monday + datetime.timedelta(day)
+        day_links.append(url_for('view_day', day="%s-%s-%s" % (day_link.year, day_link.month, day_link.day)))
+
     activities = ct.get_activities(monday, sunday)
     days = defaultdict(lambda: [])
     for activity in activities:
@@ -352,7 +357,7 @@ def view_week(week):
     else:
         current_week = url_for('view_current_week')
 
-    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week)
+    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links)
 
 
 @app.route('/view/month', methods=['GET'])

@@ -110,8 +110,8 @@ def generate_calendar_month(date):
         if weekday == 0:
             weekday = 1
 
-        tweek = datetime.date(year, month, weekday).isocalendar()
-        weeknumbers.append((tweek[0], tweek[1]))
+        iso_week = datetime.date(year, month, weekday).isocalendar()
+        weeknumbers.append((iso_week[0], iso_week[1]))
 
 
     cal = {}
@@ -257,12 +257,12 @@ def hours_list():
 
 @app.route('/view/day', methods=['GET'])
 @login_required
-def view_today():
+def view_current_day():
     return view_day(str(datetime.date.today())) #todo: return today date
 
-@app.route('/view/day/<date>', methods=['GET'])
+@app.route('/view/day/<day>', methods=['GET'])
 @login_required
-def view_day(date):
+def view_day(day):
     bsession = request.environ['beaker.session']
     ct = bsession['ct']
     tmp_projects = bsession['projects']
@@ -271,7 +271,7 @@ def view_day(date):
     for project in tmp_projects:
         projects[project.id] = project
 
-    date = time.strptime(date, "%Y.%m.%d")
+    date = time.strptime(day, "%Y-%m-%d")
     today = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
     prev_day = today - datetime.timedelta(1)
     next_day = today + datetime.timedelta(1)
@@ -282,13 +282,19 @@ def view_day(date):
         activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
         todays_activities.append(activity)
 
-    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day)
+    if day == "%d-%d-%d" % (date.tm_year, date.tm_mon, date.tm_mday):
+        current_day = False
+    else:
+        current_day = url_for('view_current_day')
+    prev_day = url_for('view_day', day=prev_day)
+    next_day = url_for('view_day', day=next_day)
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day)
 
 @app.route('/view/week', methods=['GET'])
 @login_required
 def view_current_week():
     now = datetime.datetime.now()
-    date = "%s.%s"  % (now.year, now.isocalendar()[1])
+    date = "%s-%s"  % (now.year, now.isocalendar()[1])
     return view_week(date)
 
 
@@ -303,15 +309,15 @@ def view_week(week):
     for project in tmp_projects:
         projects[project.id] = project
 
-    week = week + ".1"
-    date = time.strptime(week, "%Y.%W.%w")
+    week = week + "-1"
+    date = time.strptime(week, "%Y-%W-%w")
     monday = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
     sunday = monday + datetime.timedelta(7)
 
     prev_week = monday - datetime.timedelta(7)
-    prev_week = "%s.%02d" % (prev_week.year, int(prev_week.isocalendar()[1]))
+    prev_week = "%s-%02d" % (prev_week.year, int(prev_week.isocalendar()[1]))
     next_week = monday + datetime.timedelta(7)
-    next_week = "%s.%02d" % (next_week.year, int(next_week.isocalendar()[1]))
+    next_week = "%s-%02d" % (next_week.year, int(next_week.isocalendar()[1]))
 
     activities = ct.get_activities(monday, sunday)
     days = defaultdict(lambda: [])
@@ -337,14 +343,23 @@ def view_week(week):
                 project[day] = None
         #project = sorted(project.iteritems(), key=operator.itemgetter(0))
 
-    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week)
+    prev_week = url_for('view_week', week=prev_week)
+    next_week = url_for('view_week', week=next_week)
+
+    this_week = datetime.datetime.now().isocalendar()
+    if week == "%d-%d-%d" % (this_week[0], this_week[1], 1):
+        current_week = False
+    else:
+        current_week = url_for('view_current_week')
+
+    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week)
 
 
 @app.route('/view/month', methods=['GET'])
 @login_required
 def view_current_month():
     now = datetime.datetime.now()
-    date = "%s.%s"  % (now.year, now.month)
+    date = "%s-%s"  % (now.year, now.month)
     return view_month(date)
 
 @app.route('/view/month/<month>', methods=['GET'])
@@ -359,15 +374,11 @@ def view_month(month):
         projects[project.id] = project
 
 
-    year, month = month.split(".")
+    year, month = month.split("-")
     year = int(year)
     month = int(month)
     date = datetime.date(year, month, 1)
     todate = date + datetime.timedelta(calendar.monthrange(year, month)[1]-1)
-    prev_month = date - datetime.timedelta(1)
-    prev_month = "%s.%02d" % (prev_month.year, int(prev_month.month))
-    next_month = date + datetime.timedelta(40)
-    next_month = "%s.%02d" % (next_month.year, int(next_month.month))
 
 
     calendar_month = generate_calendar_month(date)
@@ -382,29 +393,42 @@ def view_month(month):
     for week in calendar_month:
         work_month[week] = []
         for day_month, day_week in calendar_month[week]:
-            if day_month == 0:
-                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0, "link": "%s-%s-%s" % (year, month, day_month) })
-            elif day_week == 6:
+            if day_week == 6:
                 continue
+            elif day_month == 0:
+                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0, "link": "%s-%s-%s" % (year, month, day_month) })
             else:
                 hours = 0
                 for activity in days[datetime.date(year, month, day_month)]:
                     hours += activity.duration
 
-                if day_week == 5 and [day_month+1, day_week+1] in calendar_month[week]:
+                if day_week == 5:
                     hours_sunday = 0
                     for activity in days[datetime.date(year, month, day_month+1)]:
                         hours_sunday += activity.duration
 
                     work_month[week].append({ "day": day_month, "day_sunday": day_month+1, "weekday": day_week, "hours": hours,
-                        "hours_sunday": hours_sunday, "link": "%s.%s.%s" % (year, month, day_month), "link_sunday": "%s.%s.%s" % (year, month, day_month+1) })
+                        "hours_sunday": hours_sunday, "link": "%s-%s-%s" % (year, month, day_month), "link_sunday": "%s-%s-%s" % (year, month, day_month+1) })
                 else:
-                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": "%s.%s.%s" % (year, month, day_month) })
+                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": "%s-%s-%s" % (year, month, day_month) })
 
     work_month = sorted(work_month.iteritems(), key=operator.itemgetter(0))
 
+    prev_month = date - datetime.timedelta(1)
+    prev_month = "%s-%02d" % (prev_month.year, int(prev_month.month))
+    next_month = date + datetime.timedelta(40)
+    next_month = "%s-%02d" % (next_month.year, int(next_month.month))
 
-    return render_template('view_month.html', calendar=work_month, next_month=next_month, prev_month=prev_month)
+    prev_month = url_for('view_month', month=prev_month)
+    next_month = url_for('view_month', month=next_month)
+
+    this_month = datetime.datetime.now()
+    if (year, month) == (this_month.year, this_month.month):
+        current_month = False
+    else:
+        current_month = url_for('view_current_month')
+
+    return render_template('view_month.html', calendar=work_month, next=next_month, prev=prev_month, current=current_month)
 
 @app.route('/activity/<id>', methods=['GET', 'POST'])
 @login_required

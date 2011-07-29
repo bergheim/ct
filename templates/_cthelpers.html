@@ -1,0 +1,9 @@
+{% macro render_calendar_header() %}
+<div>
+    <a href="{{ prev }}">forrige</a>
+    {% if current %}<a href="{{ current }}">{% endif %}
+        denne
+    {% if current %}</a>{% endif %}
+    <a href="{{ next }}">neste</a>
+</div>
+{% endmacro %}

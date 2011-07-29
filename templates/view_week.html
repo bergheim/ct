@@ -3,10 +3,8 @@
 
 {% block content %}
 
-<div>
-    <a href="/view/week/{{ prev }}">forrige</a>
-    <a href="/view/week/{{ next }}">neste</a>
-</div>
+{% from "_cthelpers.html" import render_calendar_header with context  %}
+{{ render_calendar_header() }}
 
 <table class="weekview">
 <thead>

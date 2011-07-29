@@ -156,7 +156,7 @@ class UserForm(RedirectForm):
 
 class ActivityForm(Form):
     hours = DecimalField()
-    notes = TextAreaField()
+    comment = TextAreaField()
 
     #todo: this should be one generic method
     #def validate_existing_hours(form, field):
@@ -280,6 +280,7 @@ def view_day(day):
     todays_activities = []
     for activity in activities:
         activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
+        activity.edit_link = url_for('edit_activity', date=day, id=activity.project_id)
         todays_activities.append(activity)
 
     if day == "%d-%d-%d" % (date.tm_year, date.tm_mon, date.tm_mday):
@@ -288,6 +289,8 @@ def view_day(day):
         current_day = url_for('view_current_day')
     prev_day = url_for('view_day', day=prev_day)
     next_day = url_for('view_day', day=next_day)
+
+
     return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day)
 
 @app.route('/view/week', methods=['GET'])
@@ -435,13 +438,27 @@ def view_month(month):
 
     return render_template('view_month.html', calendar=work_month, next=next_month, prev=prev_month, current=current_month)
 
-@app.route('/activity/<id>', methods=['GET', 'POST'])
+@app.route('/activity/<date>/<id>', methods=['GET', 'POST'])
 @login_required
-def edit_activity(id):
-    projects = testAct.projects
-    form = ActivityForm()
+def edit_activity(date, id):
+    bsession = request.environ['beaker.session']
+    ct = bsession['ct']
+    projects = bsession['projects']
 
-    #oldData = testAct.projects[id]
+    year, month, day = [int(d) for d in date.split("-")]
+    date = datetime.date(year, month, day)
+
+    activities = ct.get_activities(date, date)
+
+    #if not id in [activity.project_id for activity in activities]:
+    activity = None
+    for a in activities:
+        if id in a.project_id:
+            activity = a
+            break
+
+    form = ActivityForm(hours=activity.duration, comment=activity.comment)
+
     if request.method == 'POST' and form.validate():
         #if oldData.notes != testAct.notes and oldData.hours != oldData.hours:
         #    error = "Edited after you - aborting"

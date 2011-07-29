@@ -16,7 +16,7 @@
 
 {% for project in projects: %}
 <tr>
-    <td>{{ project.project_name }}</td>
+    <td><a href="{{ project.edit_link }}">{{ project.project_name }}</a></td>
     <td>{{ project.duration }}</td>
     <td>{{ project.comment }}</td>
 </tr>

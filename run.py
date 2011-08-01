@@ -285,9 +285,11 @@ def view_day(day):
     prev_day = today - datetime.timedelta(1)
     next_day = today + datetime.timedelta(1)
 
-    activities = ct.get_activities(today, next_day)
+    activities = ct.get_activities(today, today)
     todays_activities = []
+
     for activity in activities:
+        print "Act: ", activity
         activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
         activity.edit_link = url_for('edit_activity', date=day, id=activity.project_id)
         todays_activities.append(activity)
@@ -301,7 +303,7 @@ def view_day(day):
 
     projects_url = url_for('projects', date=today)
 
-    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url)
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day)
 
 @app.route('/view/week', methods=['GET'])
 @login_required

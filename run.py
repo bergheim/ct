@@ -15,7 +15,6 @@ import ConfigParser, random
 #from flaskext.login import LoginManager, UserMixin, \
 #    login_required, login_user, logout_user
 from beaker.middleware import SessionMiddleware
-from ct.apis import RangeAPI
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -78,6 +77,11 @@ class MethodRewriteMiddleware(object):
 config = ConfigParser.ConfigParser()
 config.read(["config.ini.sample", "config.ini"])
 
+if config.getboolean("server", "ct_cache"):
+    from ctcache import RangeAPICache
+else:
+    from ct.apis import RangeAPI
+
 session_opts = {
 #    'session.type': 'ext:memcached',
 #    'session.url': '127.0.0.1:11211',
@@ -85,7 +89,7 @@ session_opts = {
 }
 
 app = Flask(__name__)
-app.config['DEBUG'] = config.get("server", "debug")
+app.config['DEBUG'] = config.getboolean("server", "debug")
 app.config['SECRET_KEY'] = config.get("server", "secret_key")
 
 #app.wsgi_app = MethodRewriteMiddleware(app.wsgi_app)
@@ -145,6 +149,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         bsession = request.environ['beaker.session']
+        g.cache = config.getboolean("server", "ct_cache") #fixme: this should be placed elsewhere
         if not valid_user() or not bsession.has_key('ct') or not bsession['ct'].valid_session():
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
@@ -204,8 +209,12 @@ def redirect_to_login():
 
 def do_ct_login(username, password):
     server = config.get("server", "ct_url")
+    cache = config.getboolean("server", "ct_cache")
     bsession = request.environ['beaker.session']
-    ct = RangeAPI(server)
+    if cache:
+        ct = RangeAPICache(server, config.get("server", "ct_cache_file"))
+    else:
+        ct = RangeAPI(server)
     logged_in = ct.login(username, password)
     if logged_in:
         session['user'] = username
@@ -290,8 +299,9 @@ def view_day(day):
     prev_day = url_for('view_day', day=prev_day)
     next_day = url_for('view_day', day=next_day)
 
+    projects_url = url_for('projects', date=today)
 
-    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day)
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url)
 
 @app.route('/view/week', methods=['GET'])
 @login_required
@@ -467,11 +477,25 @@ def edit_activity(date, id):
 
     return render_template('activity.html', form=form, id=id)
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route('/projects/<date>', methods=['GET', 'POST'])
 @login_required
-def hello_test():
-    #return render_template('test.html') if valid_user() else redirect_to_login()
-    return render_template('test.html')
+def projects(date):
+    bsession = request.environ['beaker.session']
+    ct = bsession['ct']
+    projects = bsession['projects']
+
+    #remove already added projects
+    year, month, day = [int(d) for d in date.split("-")]
+    date = datetime.date(year, month, day)
+    activities = ct.get_activities(date, date)
+    current_unique_projects = projects[:]
+
+    for activity in activities:
+        for project in current_unique_projects:
+            if activity.project_id == project.id:
+                current_unique_projects.remove(project)
+
+    return render_template('projects.html', projects=current_unique_projects)
 
 @app.route('/user/<username>')
 @login_required

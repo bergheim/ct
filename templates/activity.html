@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Activity view{% endblock %}
+
+{% block content %}
+
+{% from "_formhelpers.html" import render_field, render_css_field %}
+<form id="form" name="form" method="post" action="/activity/{{ id }}">
+        {{ form.hidden_tag() }}
+        <h1>Edit activity</h1>
+        <p>Rediger aktivitet, eller lag ny kanskje</p>
+
+        {% if error: %}
+        <p class="feedback">{{ error }}</p>
+        {% endif %}
+
+        {{ render_css_field(form.hours)}}
+        <!--
+<input name="mydate" id="mydate" type="date" data-role="datebox"
+   data-options='{"mode": "datebox"}'>
+<input name="mydate" id="mydate" type="date" data-role="datebox"
+   data-options='{"mode": "durationbox", "durationShort": true}'>
+   -->
+        <div class="spacer"></div>
+        {{ render_css_field(form.comment)}}
+
+        <div class="spacer"></div>
+        <button type="submit">Save</button>
+
+    </form>
+
+{% endblock %}
+

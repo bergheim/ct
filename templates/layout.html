@@ -20,7 +20,9 @@
 <body>
 <div data-role="page" id="page" data-cache="never">
 <div data-role="header">
-<h1>CurrentTime</h1>
+    <h1>CurrentTime
+        {% if g.cache %}CACHE{% else %}LIVE{% endif %}
+    </h1>
     <div>
         <ul>
             <li><a href="/logout" rel="external">logg av {{ session.user }}</a></li>

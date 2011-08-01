@@ -5,3 +5,5 @@ debug = True
 secret_key = secret
 db = sqlite:///test.db
 ct_url = https://currenttime.bouvet.no
+ct_cache = False
+ct_cache_file = pickled_ct.dat

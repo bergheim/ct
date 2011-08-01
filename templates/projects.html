@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+
+<a href="javascript:history.go(-1)">tilbake</a>
+
+<ul>
+{% for project in projects %}
+<li>{{ project.name }}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}

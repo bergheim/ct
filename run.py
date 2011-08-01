@@ -160,8 +160,11 @@ class UserForm(RedirectForm):
     password = PasswordField(u'Passord', [], [], u'Minimum 4 tegn')
 
 class ActivityForm(Form):
-    hours = DecimalField()
+    duration = DecimalField()
     comment = TextAreaField()
+
+    next = HiddenField()
+    edit_timestamp = HiddenField()
 
     #todo: this should be one generic method
     #def validate_existing_hours(form, field):
@@ -253,6 +256,8 @@ def logout():
     print session
     #logout_user()
     session.clear()
+    bsession = request.environ['beaker.session']
+    bsession.delete()
     return redirect(url_for('index', _external=True), 301)
 
 @app.errorhandler(401)
@@ -286,6 +291,7 @@ def view_day(day):
     next_day = today + datetime.timedelta(1)
 
     activities = ct.get_activities(today, today)
+
     todays_activities = []
 
     for activity in activities:
@@ -469,15 +475,33 @@ def edit_activity(date, id):
             activity = a
             break
 
-    form = ActivityForm(hours=activity.duration, comment=activity.comment)
+    edit_timestamp = str(datetime.datetime.now())
+    form = ActivityForm(duration=activity.duration, comment=activity.comment, next=url_for('view_day', day=date), edit_timestamp=edit_timestamp)
 
-    if request.method == 'POST' and form.validate():
+    if request.method == "GET":
+        bsession["edit_timestamp"] = edit_timestamp
+        bsession["edit_activity"] = activity
+        bsession.save()
+
+    if form.validate_on_submit():
         #if oldData.notes != testAct.notes and oldData.hours != oldData.hours:
         #    error = "Edited after you - aborting"
         #else:
-        return redirect(request.args.get("next") or url_for('view_week'))
+        print bsession
+        if form.edit_timestamp.data != bsession["edit_timestamp"]:
+            return Response("Form edit conflict (%s != %s)" % (form.edit_timestamp.data, bsession["edit_timestamp"])) #todo: add better handling
 
-    return render_template('activity.html', form=form, id=id)
+        activity._dict["duration"] = form.duration.data
+        activity._dict["comment"] = form.comment.data
+        #if config.getboolean("server", "ct_cache"):
+        #    ct.report_activity(activity, bsession["edit_activity"], bsession)
+        #else:
+        ct.report_activity(activity, bsession["edit_activity"])
+        return redirect(form.next.data or url_for('view_current_week'))
+
+    post_url = url_for('edit_activity', date=date, id=id)
+
+    return render_template('activity.html', form=form, id=id, post_url=post_url)
 
 @app.route('/projects/<date>', methods=['GET', 'POST'])
 @login_required

@@ -14,7 +14,7 @@ class RangeAPICache(RangeAPI):
         activities = []
         for year, month in self._get_months_in_range(from_date, to_date):
             for activity in self.activities[(year, month)]:
-                if from_date <= activity.day and activity.day <= to_date and activity.has_activity():
+                if from_date <= activity.day and activity.day <= to_date:
                     activities.append(activity)
 
         return activities
@@ -24,6 +24,11 @@ class RangeAPICache(RangeAPI):
 
     def valid_session(self):
         return True
+
+    def report_activity(self, activity, previous=None):
+        #self._perform_optimistic_concurrency_validation(activity, previous)
+        #raise
+        return
 
 
 

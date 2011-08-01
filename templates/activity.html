@@ -4,7 +4,7 @@
 {% block content %}
 
 {% from "_formhelpers.html" import render_field, render_css_field %}
-<form id="form" name="form" method="post" action="/activity/{{ id }}">
+<form id="form" name="form" method="post" action="{{ post_url|safe }}">
         {{ form.hidden_tag() }}
         <h1>Edit activity</h1>
         <p>Rediger aktivitet, eller lag ny kanskje</p>
@@ -13,7 +13,7 @@
         <p class="feedback">{{ error }}</p>
         {% endif %}
 
-        {{ render_css_field(form.hours)}}
+        {{ render_css_field(form.duration)}}
         <!--
 <input name="mydate" id="mydate" type="date" data-role="datebox"
    data-options='{"mode": "datebox"}'>
@@ -29,4 +29,3 @@
     </form>
 
 {% endblock %}
-

@@ -7,6 +7,7 @@ import operator
 import pprint
 from collections import defaultdict
 from functools import wraps
+from decimal import Decimal
 
 from flask import Flask, request, Response, session, g, redirect, url_for, \
      abort, render_template, flash, get_flashed_messages, current_app
@@ -485,7 +486,7 @@ def edit_activity(date, id):
 
     #auto-complete lunch
     if activity.project_id == '1,1,3,0':
-        activity._dict["duration"] = 0 if activity.duration else 0.5
+        activity._dict["duration"] = 0 if activity.duration else Decimal('0.5')
         activity._dict["comment"] = ''
         ct.report_activity(activity, bsession["edit_activity"])
         return redirect(form.next.data or url_for('view_current_week'))

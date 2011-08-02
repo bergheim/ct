@@ -334,7 +334,7 @@ def view_week(week):
     week = week + "-1"
     date = time.strptime(week, "%Y-%W-%w")
     monday = datetime.date(date.tm_year, date.tm_mon, date.tm_mday)
-    sunday = monday + datetime.timedelta(7)
+    sunday = monday + datetime.timedelta(6)
 
     prev_week = monday - datetime.timedelta(7)
     prev_week = "%s-%02d" % (prev_week.year, int(prev_week.isocalendar()[1]))
@@ -350,19 +350,26 @@ def view_week(week):
     days = defaultdict(lambda: [])
     for activity in activities:
         activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
-        days[activity.day].append(activity)
+        day = activity.day.weekday()
+        days[day].append(activity)
 
     projects = sorted(days.iteritems(), key=operator.itemgetter(0))
 
     projects_project_indexed = {}
     for day, activities in projects:
         for activity in activities:
-            activity.link = url_for('edit_activity', date=day, id=activity.project_id)
+            link = url_for('edit_activity', date=day, id=activity.project_id)
             key = activity.project_name
             if not projects_project_indexed.has_key(key):
                 projects_project_indexed[key] = {}
 
-            projects_project_indexed[key][day.weekday()] = activity
+            if day != 6:
+                projects_project_indexed[key][day] = {"link": link, "duration": activity.duration, "comment": activity.comment}
+            else:
+                projects_project_indexed[key][day-1]["duration_sunday"] = activity.duration
+                projects_project_indexed[key][day-1]["link_sunday"] = link
+                projects_project_indexed[key][day-1]["comment_sunday"] = activity.comment
+
 
     for name, project in projects_project_indexed.iteritems():
         for day in range(6):

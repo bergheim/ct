@@ -27,13 +27,20 @@
     {% for day, activity in project.iteritems() %}
     <td>
         <a href="{{ activity.link }}" data-role="button">
-            {% if activity.duration %}
-            {{ activity.duration }}
-            {% else %}
-            0
-            {% endif %}
+            {% if activity.duration %}{{ activity.duration }}{% else %}0{% endif %}
         </a>
         {% if activity.comment %}<div class="comment">*</div>{% endif %}
+        {% if loop.last: %}
+            /
+            <a href="{{ activity.link_sunday }}" data-role="button">
+                {% if activity.duration_sunday %}
+                {{ activity.duration_sunday }}
+                {% else %}
+                0
+                {% endif %}
+            </a>
+            {% if activity.comment_sunday %}<div class="comment">*</div>{% endif %}
+        {% endif %}
     </td>
     {% endfor %}
 </tr>

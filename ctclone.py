@@ -4,6 +4,7 @@ from ct.apis import RangeAPI
 import ConfigParser
 import datetime
 import pickle
+import getpass
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -12,9 +13,10 @@ parser.add_option("-u", "--username", dest="username",
 parser.add_option("-p", "--password",
     dest="password",
     help="The password")
-
-
-
+parser.add_option("-f", "--file",
+    dest="filename",
+    default="pickled_ct.dat",
+    help="The filename to save the data as")
 
 if __name__ == '__main__':
     config = ConfigParser.ConfigParser()
@@ -25,7 +27,9 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if not options.username or not options.password:
-        parser.error("Both username and password is needed.")
+        #parser.error("Both username and password is needed.")
+        options.username = raw_input("Username: ")
+        options.password = getpass.getpass()
 
     if not "bouvet\\" in options.username:
         options.username = "bouvet\\" + options.username
@@ -46,9 +50,9 @@ if __name__ == '__main__':
         print "month: ", month
         activities[(current_year, month)] = ct._ct.get_activities(current_year, month)
 
-    print "Activities: ", activities
-
     ct_list.append(projects)
     ct_list.append(activities)
 
-    pickle.dump(ct_list, open("pickled_ct.dat", "w+"))
+    pickle.dump(ct_list, open(options.filename, "w+"))
+
+    print "Data imported."

@@ -357,6 +357,7 @@ def view_week(week):
     projects_project_indexed = {}
     for day, activities in projects:
         for activity in activities:
+            activity.link = url_for('edit_activity', date=day, id=activity.project_id)
             key = activity.project_name
             if not projects_project_indexed.has_key(key):
                 projects_project_indexed[key] = {}
@@ -379,7 +380,7 @@ def view_week(week):
     else:
         current_week = url_for('view_current_week')
 
-    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links)
+    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links, date=monday)
 
 
 @app.route('/view/month', methods=['GET'])
@@ -455,7 +456,7 @@ def view_month(month):
     else:
         current_month = url_for('view_current_month')
 
-    return render_template('view_month.html', calendar=work_month, next=next_month, prev=prev_month, current=current_month)
+    return render_template('view_month.html', calendar=work_month, next=next_month, prev=prev_month, current=current_month, date=date)
 
 @app.route('/activity/<date>/<id>', methods=['GET', 'POST'])
 @login_required

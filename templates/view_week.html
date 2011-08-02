@@ -26,7 +26,7 @@
     <td class="name">{{ name }}</td>
     {% for day, activity in project.iteritems() %}
     <td>
-        <a href="/activity/{{ activity.day }}/{{ activity.project_id }}" data-role="button">
+        <a href="{{ activity.link }}" data-role="button">
             {% if activity.duration %}
             {{ activity.duration }}
             {% else %}
@@ -41,5 +41,3 @@
 </table>
 
 {% endblock %}
-
-

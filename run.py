@@ -242,7 +242,7 @@ def login():
 
     error = ""
     if form.validate_on_submit():
-        username = form.username.data
+        username = form.username.data.lower().strip()
         if not "bouvet\\" in username:
             username = "bouvet\\" + username
         password = form.password.data

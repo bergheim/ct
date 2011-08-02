@@ -26,8 +26,7 @@ class RangeAPICache(RangeAPI):
         return True
 
     def report_activity(self, activity, previous=None):
-        #self._perform_optimistic_concurrency_validation(activity, previous)
-        #raise
+        self._perform_optimistic_concurrency_validation(activity, previous)
         return
 
 

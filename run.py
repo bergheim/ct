@@ -483,6 +483,14 @@ def edit_activity(date, id):
         bsession["edit_activity"] = activity
         bsession.save()
 
+    #auto-complete lunch
+    if activity.project_id == '1,1,3,0':
+        activity._dict["duration"] = 0 if activity.duration else 0.5
+        activity._dict["comment"] = ''
+        ct.report_activity(activity, bsession["edit_activity"])
+        return redirect(form.next.data or url_for('view_current_week'))
+
+
     if form.validate_on_submit():
         #if oldData.notes != testAct.notes and oldData.hours != oldData.hours:
         #    error = "Edited after you - aborting"

@@ -245,7 +245,7 @@ def login():
         username = form.username.data.lower().strip()
         if not "bouvet\\" in username:
             username = "bouvet\\" + username
-        password = form.password.data
+        password = form.password.data.strip()
         logged_in = do_ct_login(username, password)
         g.user = User(username)
         #login_user(g.user)
@@ -298,7 +298,6 @@ def view_day(day):
     todays_activities = []
 
     for activity in activities:
-        print "Act: ", activity
         activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
         activity.edit_link = url_for('edit_activity', date=day, id=activity.project_id)
         todays_activities.append(activity)
@@ -360,7 +359,7 @@ def view_week(week):
     projects_project_indexed = {}
     for day, activities in projects:
         for activity in activities:
-            link = url_for('edit_activity', date=day, id=activity.project_id)
+            link = url_for('edit_activity', date=activity.day, id=activity.project_id)
             key = activity.project_name
             if not projects_project_indexed.has_key(key):
                 projects_project_indexed[key] = {}

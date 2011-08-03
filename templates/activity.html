@@ -3,11 +3,20 @@
 
 {% block content %}
 
+<script>
+    function clearActivityForm() {
+        form = document.getElementById("activityForm")
+        form.elements["duration"].value = "0.0"
+        form.elements["comment"].value = ""
+    }
+</script>
+
+
 {% from "_formhelpers.html" import render_field, render_css_field %}
-<form id="form" name="form" method="post" action="{{ post_url|safe }}">
+<form id="activityForm" name="activityForm" method="post" action="{{ post_url|safe }}">
         {{ form.hidden_tag() }}
         <h1>Edit activity</h1>
-        <p>Rediger aktivitet, eller lag ny kanskje</p>
+        <p>Her kunne det kanskje stått noe.</p>
 
         {% if error: %}
         <p class="feedback">{{ error }}</p>
@@ -25,7 +34,10 @@
 
         <div class="spacer"></div>
         <button type="submit">Save</button>
+        <button type="submit" onclick="clearActivityForm(); this.submit(); return true;">Delete</button>
 
     </form>
+
+
 
 {% endblock %}

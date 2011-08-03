@@ -11,7 +11,7 @@ from decimal import Decimal
 
 from flask import Flask, request, Response, session, g, redirect, url_for, \
      abort, render_template, flash, get_flashed_messages, current_app
-from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField, HiddenField
+from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField, HiddenField, SubmitInput
 import ConfigParser, random
 #from flaskext.login import LoginManager, UserMixin, \
 #    login_required, login_user, logout_user
@@ -161,11 +161,13 @@ class UserForm(RedirectForm):
     password = PasswordField(u'Passord', [], [], u'Minimum 4 tegn')
 
 class ActivityForm(Form):
-    duration = DecimalField()
+    duration = DecimalField('Duration')
     comment = TextAreaField()
 
     next = HiddenField()
     edit_timestamp = HiddenField()
+
+    save = SubmitInput()
 
     #todo: this should be one generic method
     #def validate_existing_hours(form, field):

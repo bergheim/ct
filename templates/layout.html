@@ -8,12 +8,28 @@
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile.datebox.css') }}">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 
-    <!--
     <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
+    <!--
     <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.mobile.datebox.js') }}"></script>
     <script src="{{ url_for('static', filename='jqm-data-cache-never.js') }}"></script>
     -->
+
+    <script>
+        function getMethods(obj) {
+          var result = [];
+          for (var id in obj) {
+            try {
+              if (typeof(obj[id]) == "function") {
+                result.push(id + ": " + obj[id].toString());
+              }
+            } catch (err) {
+              result.push(id + ": inaccessible");
+            }
+          }
+          return result;
+        }
+    </script>
 
     {% endblock %}
   </head>

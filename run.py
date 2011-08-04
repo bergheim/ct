@@ -5,12 +5,14 @@ import datetime
 import time
 import operator
 import pprint
+import urllib
 from collections import defaultdict
 from functools import wraps
 from decimal import Decimal
 
 from flask import Flask, request, Response, session, g, redirect, url_for, \
-     abort, render_template, flash, get_flashed_messages, current_app
+     abort, render_template, flash, get_flashed_messages, current_app, \
+     jsonify
 from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField, HiddenField, SubmitInput
 import ConfigParser, random
 #from flaskext.login import LoginManager, UserMixin, \
@@ -313,7 +315,9 @@ def view_day(day):
 
     projects_url = url_for('projects', date=today)
 
-    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day)
+    current_url = urllib.quote_plus(request.url.replace(request.url_root[0:-1], ""))
+
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day, current_url=current_url)
 
 @app.route('/view/week', methods=['GET'])
 @login_required
@@ -361,17 +365,24 @@ def view_week(week):
     projects_project_indexed = {}
     for day, activities in projects:
         for activity in activities:
+            #current_url = urllib.quote_plus(request.url.replace(request.url_root[0:-1], ""))
+            if activity.project_id == '1,1,3,0':
+                link_class = "lunch"
+            else:
+                link_class = ""
             link = url_for('edit_activity', date=activity.day, id=activity.project_id)
+
             key = activity.project_name
             if not projects_project_indexed.has_key(key):
                 projects_project_indexed[key] = {}
 
             if day != 6:
-                projects_project_indexed[key][day] = {"link": link, "duration": activity.duration, "comment": activity.comment}
+                projects_project_indexed[key][day] = {"link": link, "duration": activity.duration, "comment": activity.comment, "link_class": link_class}
             else:
                 projects_project_indexed[key][day-1]["duration_sunday"] = activity.duration
                 projects_project_indexed[key][day-1]["link_sunday"] = link
                 projects_project_indexed[key][day-1]["comment_sunday"] = activity.comment
+                projects_project_indexed[key][day-1]["link_class_sunday"] = link_class
 
 
     for name, project in projects_project_indexed.iteritems():
@@ -389,6 +400,7 @@ def view_week(week):
         current_week = False
     else:
         current_week = url_for('view_current_week')
+
 
     return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links, date=monday)
 
@@ -497,9 +509,15 @@ def edit_activity(date, id):
 
     #auto-complete lunch
     if activity.project_id == '1,1,3,0':
+        #fixme: don't modify the dict like this
         activity._dict["duration"] = 0 if activity.duration else Decimal('0.5')
         activity._dict["comment"] = ''
         ct.report_activity(activity, bsession["edit_activity"])
+
+        #todo: it should be more obvious that this is a json request. also, this should be POST....
+        if request.args.has_key("clear"):
+            return jsonify(result=str(activity.duration))
+
         return redirect(form.next.data or url_for('view_current_week'))
 
 

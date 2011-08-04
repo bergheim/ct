@@ -26,12 +26,12 @@
     <td class="name">{{ name }}</td>
     {% for day, activity in project.iteritems() %}
     <td>
-        <a href="{{ activity.link }}" data-role="button">
+        <a href="{{ activity.link }}" class="{{ activity.link_class }}" data-role="button">
             {% if activity.duration %}{{ activity.duration }}{% else %}0{% endif %}
         </a>
         {% if activity.comment %}<div class="comment">*</div>{% endif %}
         {% if loop.last: %}/
-            <a href="{{ activity.link_sunday }}" data-role="button">
+        <a href="{{ activity.link_sunday }}" class="{{ activity.link_class_sunday }}" data-role="button">
                 {% if activity.duration_sunday %}
                 {{ activity.duration_sunday }}
                 {% else %}
@@ -45,5 +45,17 @@
 </tr>
 {% endfor %}
 </table>
+
+<script>
+    $("a.lunch").bind('click', function(test) { 
+        btn = $(this)
+        $.getJSON($(this).attr("href"), { 
+            clear: clearText
+        }, function(data) {
+            btn.text(data.result);
+        });
+        return false;
+    })
+</script>
 
 {% endblock %}

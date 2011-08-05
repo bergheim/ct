@@ -30,25 +30,10 @@
           return result;
         }
         $(document).ready(function() {
-            $(".weekview a.lunch").bind('click', function() { 
-                btn = $(this)
-                $.getJSON($(this).attr("href"), { 
-                    toggle_lunch: 1
-                }, function(data) {
-                    btn.text(data.result);
-                });
-                return false;
-            })
-            $(".dayview a.lunch").bind('click', function() { 
-                btn = $(this)
-                $.getJSON($(this).attr("href"), { 
-                    toggle_lunch: 1
-                }, function(data) {
-                    $(".dayview a.lunch").parent().siblings(":first").text(data.result)
-                });
-                return false;
-            })
+            {% block javascript_ready %}
+            {% endblock %}
         })
+
 </script>
 
 

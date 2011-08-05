@@ -46,16 +46,4 @@
 {% endfor %}
 </table>
 
-<script>
-    $("a.lunch").bind('click', function(test) { 
-        btn = $(this)
-        $.getJSON($(this).attr("href"), { 
-            clear: clearText
-        }, function(data) {
-            btn.text(data.result);
-        });
-        return false;
-    })
-</script>
-
 {% endblock %}

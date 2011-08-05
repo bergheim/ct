@@ -302,8 +302,11 @@ def view_day(day):
     todays_activities = []
 
     for activity in activities:
+        activity.link_class = "lunch" if activity.project_id == '1,1,3,0' else ""
+
         activity.project_name = projects[activity.project_id].name.split("-")[-1].strip()
-        activity.edit_link = url_for('edit_activity', date=day, id=activity.project_id)
+        current_url = urllib.quote_plus(request.url.replace(request.url_root[0:-1], ""))
+        activity.edit_link = url_for('edit_activity', date=day, id=activity.project_id, next=current_url)
         todays_activities.append(activity)
 
     if day == "%d-%d-%d" % (date.tm_year, date.tm_mon, date.tm_mday):
@@ -315,9 +318,7 @@ def view_day(day):
 
     projects_url = url_for('projects', date=today)
 
-    current_url = urllib.quote_plus(request.url.replace(request.url_root[0:-1], ""))
-
-    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day, current_url=current_url)
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day)
 
 @app.route('/view/week', methods=['GET'])
 @login_required
@@ -370,7 +371,8 @@ def view_week(week):
                 link_class = "lunch"
             else:
                 link_class = ""
-            link = url_for('edit_activity', date=activity.day, id=activity.project_id)
+            current_url = urllib.quote_plus(request.url.replace(request.url_root[0:-1], ""))
+            link = url_for('edit_activity', date=activity.day, id=activity.project_id, next=current_url)
 
             key = activity.project_name
             if not projects_project_indexed.has_key(key):
@@ -500,7 +502,11 @@ def edit_activity(date, id):
             break
 
     edit_timestamp = str(datetime.datetime.now())
-    form = ActivityForm(duration=activity.duration, comment=activity.comment, next=url_for('view_day', day=date), edit_timestamp=edit_timestamp)
+    if request.args.has_key("next"):
+        next = urllib.unquote_plus(request.args.get("next"))
+    else:
+        next = url_for('view_day', day=date)
+    form = ActivityForm(duration=activity.duration, comment=activity.comment, next=next, edit_timestamp=edit_timestamp)
 
     if request.method == "GET":
         bsession["edit_timestamp"] = edit_timestamp
@@ -515,7 +521,7 @@ def edit_activity(date, id):
         ct.report_activity(activity, bsession["edit_activity"])
 
         #todo: it should be more obvious that this is a json request. also, this should be POST....
-        if request.args.has_key("clear"):
+        if request.args.has_key("toggle_lunch"):
             return jsonify(result=str(activity.duration))
 
         return redirect(form.next.data or url_for('view_current_week'))

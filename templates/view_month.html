@@ -1,6 +1,9 @@
 {% extends "layout.html" %}
 {% block title %}Month view{% endblock %}
 
+{% block javascript_ready %}
+$(".total_week_hours").filter(function(index) { return $(this).text() < "40.0" && $(this).text() != "0.0"  }).parent().parent().css("background-color", "red")
+{% endblock %}
 {% block content %}
 
 {% from "_cthelpers.html" import render_calendar_header with context  %}
@@ -22,6 +25,7 @@
 <tr>
     <td>
         <a href="/view/week/{{ year }}-{{ weeknumber }}">{{ weeknumber }}</a>
+        <div class="total_week_hours">{{ total_week_hours[(year, weeknumber)] }}</div>
     </td>
 {% for day in weekdata: %}
 <td>
@@ -29,11 +33,11 @@
     {% if loop.last: %}
         <!--div class="divisor"></div-->
         <div class="weekend">
-            <div class="date"><a href="/view/day/{{ day.link }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
-            <div class="date"><a href="/view/day/{{ day.link_sunday }}" class="day" data-role="button">{{ day.day_sunday }}</a><div class="hours">{{ day.hours_sunday }}</div></div>
+            <div class="date"><a href="{{ day.link }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
+            <div class="date"><a href="{{ day.link_sunday }}" class="day" data-role="button">{{ day.day_sunday }}</a><div class="hours">{{ day.hours_sunday }}</div></div>
         </div>
     {% else %}
-        <div class="date"><a href="/view/day/{{ day.link }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
+        <div class="date"><a href="{{ day.link }}" class="day" data-role="button">{{ day.day }}</a><div class="hours">{{ day.hours }}</div></div>
     {% endif %}
 {{ day.day }}
 {% endif %}

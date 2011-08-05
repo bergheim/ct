@@ -442,13 +442,15 @@ def view_month(month):
         days[activity.day].append(activity)
 
     work_month = {}
+    total_week_hours = {}
     for week in calendar_month:
         work_month[week] = []
+        total_week_hours[week] = 0
         for day_month, day_week in calendar_month[week]:
             if day_week == 6:
                 continue
             elif day_month == 0:
-                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0, "link": "%s-%s-%s" % (year, month, day_month) })
+                work_month[week].append({ "day": day_month, "weekday": day_week, "hours": 0, "link": url_for('view_day', day="%s-%s-%s" % (year, month, day_month)) })
             else:
                 hours = 0
                 for activity in days[datetime.date(year, month, day_month)]:
@@ -460,9 +462,11 @@ def view_month(month):
                         hours_sunday += activity.duration
 
                     work_month[week].append({ "day": day_month, "day_sunday": day_month+1, "weekday": day_week, "hours": hours,
-                        "hours_sunday": hours_sunday, "link": "%s-%s-%s" % (year, month, day_month), "link_sunday": "%s-%s-%s" % (year, month, day_month+1) })
+                        "hours_sunday": hours_sunday, "link": url_for('view_day', day="%s-%s-%s" % (year, month, day_month)), "link_sunday": url_for('view_day', day="%s-%s-%s" % (year, month, day_month+1)) })
                 else:
-                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": "%s-%s-%s" % (year, month, day_month) })
+                    work_month[week].append({ "day": day_month, "weekday": day_week, "hours": hours, "link": url_for('view_day', day="%s-%s-%s" % (year, month, day_month))})
+
+                total_week_hours[week] += hours
 
     work_month = sorted(work_month.iteritems(), key=operator.itemgetter(0))
 
@@ -480,7 +484,7 @@ def view_month(month):
     else:
         current_month = url_for('view_current_month')
 
-    return render_template('view_month.html', calendar=work_month, next=next_month, prev=prev_month, current=current_month, date=date)
+    return render_template('view_month.html', calendar=work_month, next=next_month, prev=prev_month, current=current_month, date=date, total_week_hours=total_week_hours)
 
 @app.route('/activity/<date>/<id>', methods=['GET', 'POST'])
 @login_required

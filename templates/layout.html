@@ -46,10 +46,9 @@
     </h1>
     <div>
         <ul>
-            <li><a href="/logout" rel="external">logg av {{ session.user }}</a></li>
-            <li><a href="/">home</a></li>
-            <li><a href="{{ week_link }}">week view</a></li>
-            <li><a href="{{ month_link }}">month view</a></li>
+            <li><a href="/logout" rel="external">logg av</a></li>
+            <li><a href="{{ week_link|default('/view/week') }}">week view</a></li>
+            <li><a href="{{ month_link|default('/view/month') }}">month view</a></li>
         </ul>
     </div>
 </div>

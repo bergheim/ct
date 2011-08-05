@@ -409,7 +409,8 @@ def view_week(week):
     week_link = url_for('view_current_week')
     month_link = url_for('view_month', month="%s-%.2d" % (date.tm_year, date.tm_mon))
 
-    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links, date=monday, week_link=week_link, month_link=month_link)
+    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week,
+            current=current_week, day_links=day_links, date=monday, week_link=week_link, month_link=month_link)
 
 
 @app.route('/view/month', methods=['GET'])

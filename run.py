@@ -318,7 +318,10 @@ def view_day(day):
 
     projects_url = url_for('projects', date=today)
 
-    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day)
+    week_link = url_for('view_week', week="%s-%.2d" % (date.tm_year, today.isocalendar()[1]))
+    month_link = url_for('view_month', month="%s-%.2d" % (date.tm_year, date.tm_mon))
+
+    return render_template('view_day.html', projects=todays_activities, prev=prev_day, next=next_day, current=current_day, projects_url=projects_url, date=day, month_link=month_link, week_link=week_link)
 
 @app.route('/view/week', methods=['GET'])
 @login_required
@@ -403,8 +406,10 @@ def view_week(week):
     else:
         current_week = url_for('view_current_week')
 
+    week_link = url_for('view_current_week')
+    month_link = url_for('view_month', month="%s-%.2d" % (date.tm_year, date.tm_mon))
 
-    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links, date=monday)
+    return render_template('view_week.html', projects=projects_project_indexed, next=next_week, prev=prev_week, current=current_week, day_links=day_links, date=monday, week_link=week_link, month_link=month_link)
 
 
 @app.route('/view/month', methods=['GET'])

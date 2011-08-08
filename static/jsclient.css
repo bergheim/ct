@@ -1,3 +1,12 @@
 #nav-bar {
     margin: 0;
 }
+
+table.activities input.duration {
+    width: 2em;
+}
+
+table.activities input.duration,
+table.activities textarea {
+    height: 1.2em;
+}

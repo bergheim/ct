@@ -1,15 +1,19 @@
-var availableActivities = [          
-    { id: 1, name: 'Lunsj', comment: '', duration: 0.5 },
-    { id: 2, name: 'Ferie', comment: 'Dro til Italia', duration: 8.0 },
-    { id: 3, name: 'Avspasering', comment: '', duration: 7.50 }
-];
+var allActivities;
+var activities, availableActivities, projects;
 
-var activities = [          
-    { id: 1, name: 'Lunsj', comment: '', duration: 0.5 },
-    { id: 2, name: 'Ferie', comment: 'Dro til Italia', duration: 8.0 },
-    { id: 3, name: 'Avspasering', comment: '', duration: 7.50 }
-];
+$(document).bind("ready", function() {
+        $.getJSON('/api/projects', function(data) {
+            projects = data.projects;
+        });
 
-var viewModel = {
-}
-ko.applyBindings(viewModel);
+        $.getJSON('/api/activities/2011/8', function(data) {
+            allActivities = data.activities;
+            activities = allActivities['2011-08-08']
+            availableActivities = allActivities['2011-08-06']
+
+            var viewModel = {
+            }
+            ko.applyBindings(viewModel);
+            $('.databound').each(function() { $(this).page() });
+        });
+});

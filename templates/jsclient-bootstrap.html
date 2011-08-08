@@ -31,22 +31,54 @@
             <div data-role="content">
                 {% raw %}
                 <script type="text/html" id="activityTemplate">
-                    <h2>Rapporterte aktiviteter</h2>
                     <table class="activities">
+                        <tr>
+                            <th>Navn</th>
+                            <th>Varighet</th>
+                            <th>Kommentar</th>
+                            <th>Valg</th>
+                        </tr>
                         {{each activities}}
                         <tr>
                             <td>${ name }</td>
                             <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
                             <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
                             <td>
-                                <a href="index.html" data-role="button" data-icon="minus" data-iconpos="notext">Delete</a>
+                                <a href="index.html" data-role="button" data-icon="minus" data-iconpos="notext">Slett</a>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </table>
+                </script>
+
+                <script type="text/html" id="availableActivitiesTemplate">
+                    <table class="activities">
+                        <tr>
+                            <th>Navn</th>
+                            <th>Varighet</th>
+                            <th>Kommentar</th>
+                            <th>Valg</th>
+                        </tr>
+                        {{each availableActivities}}
+                        <tr>
+                            <td>${ name }</td>
+                            <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
+                            <td>
+                                <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
+                            <td>
+                                <a href="index.html" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</a>
                             </td>
                         </tr>
                         {{/each}}
                     </table>
                 </script>
                 {% endraw %}
+
+                <h2>Rapporterte aktiviteter</h2>
                 <div data-bind='template: "activityTemplate"'> </div>
+                <h2>Tilgjengelige aktiviteter</h2>
+                <div data-bind='template: "availableActivitiesTemplate"'> </div>
+                <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
             </div>
 
             <div data-role="footer" class="footer">

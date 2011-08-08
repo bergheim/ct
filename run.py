@@ -236,6 +236,7 @@ def do_ct_login(username, password):
 @app.route('/')
 @login_required
 def index():
+    return redirect(url_for('view_current_month'))
     return render_template('index.html')
 
 @app.route('/login', methods=['GET','POST'])

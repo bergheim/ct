@@ -38,7 +38,7 @@
                         </tr>
                         {{each currentActivities}}
                         <tr>
-                            <td>${ id }</td>
+                            <td data-bind="text: getProjectName(id)">data bound</td>
                             <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
                             <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
                             <td>
@@ -59,7 +59,7 @@
                         </tr>
                         {{each recentActivities}}
                         <tr>
-                            <td>${ id }</td>
+                            <td data-bind="text: getProjectName(id)">data bound</td>
                             <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
                             <td>
                                 <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>

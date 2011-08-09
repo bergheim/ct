@@ -54,6 +54,10 @@
 	    reloadData: function() {
 		populateProjects(this);
 		populateActivities(this);
+	    },
+
+	    getProjectName: function(projectId) {
+		return this.projects()[projectId];
 	    }
 	};
 

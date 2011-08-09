@@ -4,9 +4,11 @@ from functools import wraps
 from collections import defaultdict
 import ConfigParser, random
 from flask import Flask, request, Response, session, g, redirect, url_for, \
-     abort, render_template, flash, get_flashed_messages, current_app, \
-     jsonify
-from flaskext.wtf import Form, DateField, TextField, Required, validators, PasswordField, TextAreaField, DecimalField, HiddenField, SubmitInput
+    abort, render_template, flash, get_flashed_messages, current_app, \
+    jsonify
+from flaskext.wtf import Form, DateField, TextField, Required, \
+    validators, PasswordField, TextAreaField, DecimalField, HiddenField, \
+    SubmitInput
 
 from urlparse import urlparse
 
@@ -24,32 +26,30 @@ def is_safe_url(target):
            ref_url.netloc == test_url.netloc
 
 
-def get_redirect_target():
-    """Returns the redirect target we want to use.  Tries the 'next'
-    parameter from GET and falls back to the referrer from the request.
-    """
-    for target in request.args.get('next'), request.referrer:
-        if not target:
-            continue
-        if is_safe_url(target):
-            return target
-
-class RedirectForm(Form):
-    next = HiddenField()
+class UserForm(Form):
+    username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
+    password = PasswordField(u'Passord', [validators.Length(min=4)], [], u'Minimum 4 tegn')
+    next_page = HiddenField()
 
     def __init__(self, *args, **kwargs):
-        Form.__init__(self, *args, **kwargs)
-        if not self.next.data:
-            self.next.data = get_redirect_target() or ''
+        super(UserForm, self).__init__(*args, **kwargs)
+        
+        if not self.next_page.data:
+            self.next_page.data = request.args.get('next') or request.referrer
 
-    def redirect(self, endpoint='index', **values):
-        if is_safe_url(self.next.data):
-            return redirect(self.next.data)
-        return redirect(get_redirect_target() or url_for(endpoint, **values))
+    def validate_next_page(self, field):
+        if field.data and not is_safe_url(field.data):
+            field.data = None
+            
+    def validate_username(self, field):
+        username = field.data.lower().strip()
+        if not "bouvet\\" in username:
+            username = "bouvet\\" + username
+        field.data = username
 
-class UserForm(RedirectForm):
-    username = TextField(u'Brukernavn', [validators.Length(min=3, max=25)], [], u'Ditt brukernavn')
-    password = PasswordField(u'Passord', [], [], u'Minimum 4 tegn')
+    def validate_password(self, field):
+        field.data = field.data.strip()
+
 
 def do_ct_login(username, password):
     server = config.get("server", "ct_url")
@@ -59,14 +59,15 @@ def do_ct_login(username, password):
         session['user'] = username
         session['ct'] = ct
 
-    raise
-
     return logged_in
+
+def is_logged_in():
+    return session.has_key('ct') and session['ct'].valid_session()
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if session.has_key('ct') and session['ct'].valid_session():
+        if is_logged_in():
             g.ct = session['ct']
             return f(*args, **kwargs)
         return redirect(url_for('login', next=request.url))
@@ -79,20 +80,18 @@ app.config['SECRET_KEY'] = config.get("server", "secret_key")
 
 @app.route('/login', methods=['GET','POST'])
 def login():
-    form = UserForm()
-    if request.args.has_key("next"):
-        form.next_page = HiddenField(default=request.args.get("next"))
+    if is_logged_in():
+        return redirect(url_for('index'))
 
     error = ""
+    form = UserForm()
     if form.validate_on_submit():
-        username = form.username.data.lower().strip()
-        if not "bouvet\\" in username:
-            username = "bouvet\\" + username
-        password = form.password.data.strip()
-        logged_in = do_ct_login(username, password)
-        g.user = username
+        logged_in = do_ct_login(form.data.username, form.data.password)
         if logged_in:
-            return form.redirect(endpoint=url_for('index', username=username))
+            next_page = form.next_page.data or url_for('index')
+            return redirect(next_page)
+        else:
+            error = "Username and password did not match."
 
     return render_template('login.html', form=form, error=error)
 

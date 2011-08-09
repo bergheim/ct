@@ -73,9 +73,9 @@
                 {% endraw %}
 
                 <h2>Rapporterte aktiviteter</h2>
-                <div class="databound" data-bind='template: "activityTemplate"'> </div>
+                <div class="databound" data-bind='template: { name: "activityTemplate", afterRender: postProcess }'> </div>
                 <h2>Tilgjengelige aktiviteter</h2>
-                <div class="databound" data-bind='template: "availableActivitiesTemplate"'> </div>
+                <div class="databound" data-bind='template:  { name: "availableActivitiesTemplate", afterRender: postProcess }'> </div>
                 <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
             </div>
 

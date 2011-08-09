@@ -11,12 +11,12 @@
     <body> 
         <div data-role="page" id="jqm-home" class="type-home">
             <div data-role="header">
-                <a href="#" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
-                <h1>mandag 8. august 2011</h1>
+                <a href="#" data-bind="click: gotoToday" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
+                <h1 data-bind="text: selectedDayString">mandag 8. august 2011</h1>
                 <div id="nav-bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
-                    <a href="#" data-role="button" data-icon="arrow-l" data-iconpos="notext">&lt;</a>
-                    <a href="#" data-role="button" data-icon="arrow-r" data-iconpos="notext">&gt;</a>
-                    <a href="#" data-role="button" data-icon="refresh" data-iconpos="notext">↻</a>
+                    <a href="#" data-bind="click: gotoPreviousDay" data-role="button" data-icon="arrow-l" data-iconpos="notext" alt="Forrige dag">&lt;</a>
+                    <a href="#" data-bind="click: gotoNextDay" data-role="button" data-icon="arrow-r" data-iconpos="notext" alt="Neste dag">&gt;</a>
+                    <a href="#" data-bind="click: reloadData" data-role="button" data-icon="refresh" data-iconpos="notext" alt="Last data på nytt">↻</a>
                 </div>
                 <div data-role="navbar">
                     <ul>
@@ -36,7 +36,7 @@
                             <th>Kommentar</th>
                             <th>Valg</th>
                         </tr>
-                        {{each activities}}
+                        {{each currentActivities}}
                         <tr>
                             <td>${ id }</td>
                             <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
@@ -57,7 +57,7 @@
                             <th>Kommentar</th>
                             <th>Valg</th>
                         </tr>
-                        {{each availableActivities}}
+                        {{each recentActivities}}
                         <tr>
                             <td>${ id }</td>
                             <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
@@ -85,6 +85,7 @@
         </div>
     </body>
     <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
     <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.tmpl.min.js') }}"></script>

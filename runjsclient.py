@@ -86,7 +86,7 @@ def login():
     error = ""
     form = UserForm()
     if form.validate_on_submit():
-        logged_in = do_ct_login(form.data.username, form.data.password)
+        logged_in = do_ct_login(form.username.data, form.password.data)
         if logged_in:
             next_page = form.next_page.data or url_for('index')
             return redirect(next_page)

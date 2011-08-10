@@ -55,6 +55,7 @@
     };
 
     var CurrentTime = function() {
+	this._isFetchingActivities = false;
 	this._projects = [];
 	this._activitiesByDay = [];
 
@@ -72,41 +73,61 @@
 	    var date = getSelectedDate();
 	    viewModel.date(date);
 	    viewModel.title(getTitleFromString(date));
-	    this.setActivities(viewModel, date);
-	    this.setRecentActivities(viewModel, date);
+	    this.updateActivities(viewModel, date);
+	    this.updateRecentActivities(viewModel, date);
 	},
 	getProjectName: function(id) {
 	    return this._projects[id];
 	},
-	setActivities: function(viewModel, day) {
-	    var callback = function(data) {
-		viewModel.activities(data);
-	    };
-	    this.getActivities(day, callback);
-	},
-	setRecentActivities: function(viewModel, currentDate) {
-	    var callback = function(data) {
-		viewModel.recentActivities(data);
-	    };
-	    var day = previousDayFromString(currentDate);
-	    this.getActivities(day, callback);
-	},
-	getActivities: function(day, callback) {
+	extendActivitiesByDay: function(activitiesByDay) {
 	    var self = this;
-	    if (self._activitiesByDay.hasOwnProperty(day)) {
-		callback(self._activitiesByDay[day]);
+	    $.map(activitiesByDay, function(activities, day) {
+		var withDuration = $.grep(activities, function(activity) {
+		    return activity.duration > 0;
+		});
+
+		self._activitiesByDay[day] = withDuration;
+	    });
+	},
+	getActivities: function(day) {
+	    return this._activitiesByDay[day];
+	},
+	hasData: function(day) {
+	    return this._activitiesByDay.hasOwnProperty(day);
+	},
+	updateActivities: function(viewModel, day) {
+	    if (this.hasData(day)) {
+		var data = this.getActivities(day);
+		viewModel.activities(data);
 	    } else {
-		if (self._promise && !(self._promise.isResolved() || self._promise.isRejected())) {
-		    self._promise.complete(function() {
-			self.getActivities(day, callback);
-		    });
-		} else {
-		    self._promise = $.getJSON(getActivitiesUrl(day), function(data) {
-			$.extend(self._activitiesByDay, data.activities);
-			callback(self._activitiesByDay[day]);
-		    });
-		}
+		var self = this;
+		self.fetchActivities(day, function() {
+		    self.updateActivities(viewModel, day);
+		});
+	    };
+	},
+	updateRecentActivities: function(viewModel, currentDate) {
+	    var day = previousDayFromString(currentDate);
+	    if (this.hasData(day)) {
+		var data = this.getActivities(day);
+		viewModel.recentActivities(data);
+	    } else {
+		var self = this;
+		self.fetchActivities(day, function() {
+		    self.updateRecentActivities(viewModel, day);
+		});
 	    }
+	},
+	fetchActivities: function(day, callback) {
+	    var self = this;
+	    if (!self._isFetchingActivities) {
+		self._isFetchingActivities = true;
+		self._promise = $.getJSON(getActivitiesUrl(day), function(data) {
+		    self.extendActivitiesByDay(data.activities);
+		    self._isFetchingActivities = false;
+		});
+	    }
+	    self._promise.always(callback);
 	}
     };
     

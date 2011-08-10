@@ -1,94 +1,85 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>CT: What have you done?</title>
-        <link rel="stylesheet"  href="http://code.jquery.com/mobile/1.0b1/jquery.mobile-1.0b1.min.css" />
-        <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b1.css') }}">
-        <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
-    </head> 
-    <body> 
-        <div data-role="page" id="jqm-home" class="type-home">
-            <div data-role="header">
-                <a href="#" data-bind="click: gotoToday" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
-                <h1 data-bind="text: selectedDayString">mandag 8. august 2011</h1>
-                <div id="nav-bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
-                    <a href="#" data-bind="click: gotoPreviousDay" data-role="button" data-icon="arrow-l" data-iconpos="notext" alt="Forrige dag">&lt;</a>
-                    <a href="#" data-bind="click: gotoNextDay" data-role="button" data-icon="arrow-r" data-iconpos="notext" alt="Neste dag">&gt;</a>
-                    <a href="#" data-bind="click: reloadData" data-role="button" data-icon="refresh" data-iconpos="notext" alt="Last data på nytt">↻</a>
-                </div>
-                <div data-role="navbar">
-                    <ul>
-                        <li><a href="a.html" class="ui-btn-active">Dag</a></li>
-                        <li><a href="b.html">Uke</a></li>
-                        <li><a href="b.html">Måned</a></li>
-                    </ul>
-                </div> 
-            </div>
-            <div data-role="content">
-                {% raw %}
-                <script type="text/html" id="activityTemplate">
-                    <table class="activities">
-                        <tr>
-                            <th>Navn</th>
-                            <th>Varighet</th>
-                            <th>Kommentar</th>
-                            <th>Valg</th>
-                        </tr>
-                        {{each currentActivities}}
-                        <tr>
-                            <td data-bind="text: getProjectName(id)">data bound</td>
-                            <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
-                            <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-                            <td>
-                                <a href="index.html" data-role="button" data-icon="minus" data-iconpos="notext">Slett</a>
-                            </td>
-                        </tr>
-                        {{/each}}
-                    </table>
-                </script>
-
-                <script type="text/html" id="availableActivitiesTemplate">
-                    <table class="activities">
-                        <tr>
-                            <th>Navn</th>
-                            <th>Varighet</th>
-                            <th>Kommentar</th>
-                            <th>Valg</th>
-                        </tr>
-                        {{each recentActivities}}
-                        <tr>
-                            <td data-bind="text: getProjectName(id)">data bound</td>
-                            <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
-                            <td>
-                                <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-                            <td>
-                                <a href="index.html" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</a>
-                            </td>
-                        </tr>
-                        {{/each}}
-                    </table>
-                </script>
-                {% endraw %}
-
-                <h2>Rapporterte aktiviteter</h2>
-                <div class="databound" data-bind='template: { name: "activityTemplate", afterRender: postProcess }'> </div>
-                <h2>Tilgjengelige aktiviteter</h2>
-                <div class="databound" data-bind='template:  { name: "availableActivitiesTemplate", afterRender: postProcess }'> </div>
-                <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
-            </div>
-
-            <div data-role="footer" class="footer">
-                <p>&copy; 2011 The CurrentTime Replacement Project</p>
-            </div>  
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CT: What have you done?</title>
+    <link rel="stylesheet"  href="http://code.jquery.com/mobile/1.0b1/jquery.mobile-1.0b1.min.css" />
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b1.css') }}">
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
+  </head> 
+  <body> 
+    <div data-role="page" id="jqm-home" class="type-home">
+      <div data-role="header">
+        <a href="#" data-bind="attr: { href: home }" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
+        <h1><span data-bind="text: title"></span></h1>
+        <div id="nav-bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
+          <a href="#" data-bind="attr: { href: prev }" data-role="button" data-icon="arrow-l" data-iconpos="notext" alt="Forrige dag">&lt;</a>
+          <a href="#" data-bind="attr: { href: next }" data-role="button" data-icon="arrow-r" data-iconpos="notext" alt="Neste dag">&gt;</a>
+          <a href="#" data-bind="click: reload" data-role="button" data-icon="refresh" data-iconpos="notext" alt="Last data på nytt">↻</a>
         </div>
-    </body>
-    <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
-    <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.tmpl.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='knockout-1.2.1.js') }}"></script>
+        <div data-role="navbar">
+          <ul>
+            <li><a href="a.html" class="ui-btn-active">Dag</a></li>
+            <li><a href="b.html">Uke</a></li>
+            <li><a href="b.html">Måned</a></li>
+          </ul>
+        </div> 
+      </div>
+      <div data-role="content">{% raw %}
+        <script type="text/html" id="activityTemplate">
+          <table class="activities">
+            <tr>
+              <th>Navn</th>
+              <th>Varighet</th>
+              <th>Kommentar</th>
+              <th>Valg</th>
+            </tr>
+            {{each activities}}
+            <tr>
+              <td><span data-bind="text: ct.getProjectName(id)"></span></td>
+              <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
+              <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
+              <td><a href="index.html" data-role="button" data-icon="minus" data-iconpos="notext">Slett</a></td>
+            </tr>
+            {{/each}}
+          </table>
+        </script>
+        <script type="text/html" id="availableActivitiesTemplate">
+          <table class="activities">
+            <tr>
+              <th>Navn</th>
+              <th>Varighet</th>
+              <th>Kommentar</th>
+              <th>Valg</th>
+            </tr>
+            {{each recentActivities}}
+            <tr>
+              <td><span data-bind="text: ct.getProjectName(id)"></span></td>
+              <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
+              <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
+	      <td><a href="index.html" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</a></td>
+            </tr>
+            {{/each}}
+          </table>
+        </script>{% endraw %}
+        <h2>Rapporterte aktiviteter</h2>
+        <div class="databound" data-bind='template: { name: "activityTemplate", afterRender: postProcess }'> </div>
+        <h2>Tilgjengelige aktiviteter</h2>
+        <div class="databound" data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess }'> </div>
+        <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
+      </div>
+      <div data-role="footer" class="footer">
+        <p>&copy; 2011 The CurrentTime Replacement Project</p>
+      </div>  
+    </div>
+  </body>
+  <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='jquery.address-1.4.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
+  <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
+  <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
+  <script src="{{ url_for('static', filename='jquery.tmpl.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='knockout-1.2.1.js') }}"></script>
 </html>
 

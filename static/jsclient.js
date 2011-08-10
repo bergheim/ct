@@ -97,10 +97,16 @@
 	},
 	updateActivities: function(viewModel, day) {
 	    if (this.hasData(day)) {
+		if (viewModel.date() != day) {
+		    return;
+		}
+
 		var data = this.getActivities(day);
 		viewModel.activities(data);
+		$.mobile.pageLoading(true);
 	    } else {
 		var self = this;
+		$.mobile.pageLoading();
 		self.fetchActivities(day, function() {
 		    self.updateActivities(viewModel, day);
 		});
@@ -109,6 +115,10 @@
 	updateRecentActivities: function(viewModel, currentDate) {
 	    var day = previousDayFromString(currentDate);
 	    if (this.hasData(day)) {
+		if (viewModel.date() != day) {
+		    return;
+		}
+
 		var data = this.getActivities(day);
 		viewModel.recentActivities(data);
 	    } else {

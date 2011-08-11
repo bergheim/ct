@@ -96,6 +96,8 @@
 	    return this._activitiesByDay.hasOwnProperty(day);
 	},
 	updateActivities: function(viewModel, day) {
+	    viewModel.activities.removeAll();
+
 	    if (this.hasData(day)) {
 		if (viewModel.date() != day) {
 		    return;
@@ -113,18 +115,12 @@
 	    };
 	},
 	updateRecentActivities: function(viewModel, currentDate) {
+	    viewModel.recentActivities.removeAll();
+
 	    var day = previousDayFromString(currentDate);
 	    var activities = [];
 	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
 	    
-	    // Quickly remove activities that exist for the selected day
-	    var recent = viewModel.recentActivities();
-	    _.each(recent, function(activity) {
-		if (_.contains(excluded_ids, activity.id)) {
-		    viewModel.recentActivities.remove(activity);
-		}
-	    });
-
 	    while (viewModel.recentActivities().length < 5) {
 		if (this.hasData(day)) {
 		    var data = this.getActivities(day);
@@ -168,10 +164,10 @@
 	    recentActivities: ko.observableArray([]),
 	    addRecentActivity: function(recentActivity) {
 		var activity = _.clone(recentActivity);
-		activity.day = this.date;
+		activity.day = this.date();
 		activity.comment = "";
 		this.activities.push(activity);
-		ct.updateRecentActivities(this);
+		ct.updateRecentActivities(this, activity.day);
 	    },
 	    removeActivity: function(activity) {
 		this.activities.remove(activity);

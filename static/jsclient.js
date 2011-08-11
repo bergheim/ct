@@ -81,8 +81,8 @@
 	},
 	extendActivitiesByDay: function(activitiesByDay) {
 	    var self = this;
-	    $.map(activitiesByDay, function(activities, day) {
-		var withDuration = $.grep(activities, function(activity) {
+	    _.map(activitiesByDay, function(activities, day) {
+		var withDuration = _.select(activities, function(activity) {
 		    return activity.duration > 0;
 		});
 
@@ -115,18 +115,18 @@
 	updateRecentActivities: function(viewModel, currentDate) {
 	    var day = previousDayFromString(currentDate);
 	    var activities = [];
-	    var exclude = viewModel.activities();
+	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
 
 	    while (true) {
 		if (this.hasData(day)) {
 		    var data = this.getActivities(day);
-		    var exclude_projects = _.pluck(exclude, 'id');
 		    var include = _.select(data, function(activity) {
-			return !_.include(exclude_projects, activity.id);
+			return !_.contains(excluded_ids, activity.id);
 		    });
 
 		    activities = activities.concat(include);
-		    exclude = exclude.concat(include);
+		    excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
+
 		    if (activities.length >= 5) {
 			viewModel.recentActivities(activities);
 			return;

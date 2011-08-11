@@ -12,6 +12,7 @@ from flaskext.wtf import Form, DateField, TextField, Required, \
     validators, PasswordField, TextAreaField, DecimalField, HiddenField, \
     SubmitInput
 
+from decimal import Decimal
 from urlparse import urlparse
 
 config = ConfigParser.ConfigParser()
@@ -20,13 +21,13 @@ config.read(["config.ini.sample", "config.ini"])
 from ct.apis import SimpleAPI
 from ct.activity import Activity
 
-def ct_get_date(year, month, day):
+def ct_format_date(year, month, day):
     return "%s-%02d-%02d" % (year, month, day)
     
 def ct_get_month(year, month):
     ndays = calendar.monthrange(year, month)[1]
     days = xrange(1, ndays + 1)
-    keys = [ct_get_date(year, month, day) for day in days]
+    keys = [ct_format_date(year, month, day) for day in days]
     activities_by_date = dict(map(lambda x: (x, []), keys))
     for activity in g.ct.get_activities(year, month):
         if activity.duration <= 0:
@@ -40,6 +41,11 @@ def ct_get_month(year, month):
             'day': date
         })
     return activities_by_date
+
+def ct_get_day(year, month, day):
+    all_activities = ct_get_month(year, month)
+    date = ct_format_date(year, month, day)
+    return { date: all_activities[date] }
 
 def is_safe_url(target):
     """Only redirect to URLs on the same host."""
@@ -142,19 +148,29 @@ def get_activities_by_month(year, month):
 @app.route('/api/activities/<int:year>/<int:month>/<int:day>', methods=["GET"])
 @login_required
 def get_activities_by_day(year, month, day):
-    all_activities = ct_get_month(year, month)
-    date = ct_get_date(year, month, day)
-    return jsonify(activities={ date: all_activities[date] })
+    return jsonify(activities=ct_get_day(year, month, day))
 
 @app.route('/api/activities/<int:year>/<int:month>/<int:day>', methods=["PUT", "POST"])
 @login_required
 def set_activities_by_day(year, month, day):
-    for data in request.json['activities']:
+    _, current_activities = ct_get_day(year, month, day).popitem()
+    to_add = request.json['activities']
+    to_delete = [x for x in current_activities if not x in to_add]
+
+    for data in to_add:
+        activity = activity_from_dict(data)
+        g.ct.report_activity(activity)
+
+    for data in to_delete:
+        activity = activity_from_dict(data)
+        g.ct.delete_activity(activity)
+    return get_activities_by_day(year, month, day)
+
+def activity_from_dict(data):
         year, month, day = [int(x) for x in data['day'].split("-")]
         date = datetime.date(year, month, day)
-        activity = Activity(date, data['id'], data['duration'], data['comment'])
-        g.ct.report_activity(activity)
-    return get_activities_by_day(year, month, day)
+        duration = Decimal(data['duration'])
+        return Activity(date, data['id'], data['duration'], data['comment'])
 
 if __name__ == '__main__':
     host = config.get("server", "host")

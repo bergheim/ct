@@ -116,6 +116,14 @@
 	    var day = previousDayFromString(currentDate);
 	    var activities = [];
 	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
+	    
+	    // Quickly remove activities that exist for the selected day
+	    var recent = viewModel.recentActivities();
+	    _.each(recent, function(activity) {
+		if (_.contains(excluded_ids, activity.id)) {
+		    viewModel.recentActivities.remove(activity);
+		}
+	    });
 
 	    while (true) {
 		if (this.hasData(day)) {

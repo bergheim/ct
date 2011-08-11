@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import calendar
+import datetime
 from functools import wraps
 from collections import defaultdict
 import ConfigParser, random
@@ -17,7 +18,28 @@ config = ConfigParser.ConfigParser()
 config.read(["config.ini.sample", "config.ini"])
 
 from ct.apis import SimpleAPI
+from ct.activity import Activity
 
+def ct_get_date(year, month, day):
+    return "%s-%02d-%02d" % (year, month, day)
+    
+def ct_get_month(year, month):
+    ndays = calendar.monthrange(year, month)[1]
+    days = xrange(1, ndays + 1)
+    keys = [ct_get_date(year, month, day) for day in days]
+    activities_by_date = dict(map(lambda x: (x, []), keys))
+    for activity in g.ct.get_activities(year, month):
+        if activity.duration <= 0:
+            continue
+
+        date = activity.day.strftime("%Y-%m-%d")
+        activities_by_date[date].append({
+            'id': activity.project_id,
+            'comment': activity.comment,
+            'duration': str(activity.duration),
+            'day': date
+        })
+    return activities_by_date
 
 def is_safe_url(target):
     """Only redirect to URLs on the same host."""
@@ -114,21 +136,25 @@ def get_projects():
 
 @app.route('/api/activities/<int:year>/<int:month>')
 @login_required
-def get_activities(year, month):
-    ndays = calendar.monthrange(year, month)[1]
-    days = xrange(1, ndays + 1)
-    keys = ["%s-%02d-%02d" % (year, month, day) for day in days]
-    activities_by_date = dict(map(lambda x: (x, []), keys))
-    for activity in g.ct.get_activities(year, month):
-        date = activity.day.strftime("%Y-%m-%d")
-        activities_by_date[date].append({
-            'id': activity.project_id,
-            'comment': activity.comment,
-            'duration': str(activity.duration),
-            'day': date
-        })
-    
-    return jsonify(activities=activities_by_date)
+def get_activities_by_month(year, month):
+    return jsonify(activities=ct_get_month(year, month))
+
+@app.route('/api/activities/<int:year>/<int:month>/<int:day>', methods=["GET"])
+@login_required
+def get_activities_by_day(year, month, day):
+    all_activities = ct_get_month(year, month)
+    date = ct_get_date(year, month, day)
+    return jsonify(activities={ date: all_activities[date] })
+
+@app.route('/api/activities/<int:year>/<int:month>/<int:day>', methods=["PUT", "POST"])
+@login_required
+def set_activities_by_day(year, month, day):
+    for data in request.json['activities']:
+        year, month, day = [int(x) for x in data['day'].split("-")]
+        date = datetime.date(year, month, day)
+        activity = Activity(date, data['id'], data['duration'], data['comment'])
+        g.ct.report_activity(activity)
+    return get_activities_by_day(year, month, day)
 
 if __name__ == '__main__':
     host = config.get("server", "host")

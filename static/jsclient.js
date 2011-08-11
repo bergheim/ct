@@ -74,6 +74,11 @@
 	return "/api/activities/" + d.toString("yyyy/MM");
     };
 
+    var setActivityUrl = function(s) { 
+	var d = getDateFromString(s);
+	return "/api/activities/" + d.toString("yyyy/MM/dd");
+    };
+
     var currentDate = function() {
 	return getStringFromDate(Date.today());
     };
@@ -100,11 +105,7 @@
 	extendActivitiesByDay: function(activitiesByDay) {
 	    var self = this;
 	    _.map(activitiesByDay, function(activities, day) {
-		var withDuration = _.select(activities, function(activity) {
-		    return activity.duration > 0;
-		});
-
-		self._activitiesByDay[day] = withDuration;
+		self._activitiesByDay[day] = activities;
 	    });
 	},
 	getActivities: function(day) {
@@ -125,6 +126,22 @@
 		});
 	    }
 	    self._promise.always(callback);
+	},
+	postActivities: function(day, activities, callback) {
+	    var url = setActivityUrl(day);
+	    var data = { activities: activities };
+	    var self = this;
+	    $.ajax({
+		type: "post",
+		url: url,
+		data: JSON.stringify(data),
+		dataType: "json",
+		contentType: "application/json; charset=utf-8",
+		success: function(result) {
+		    self.extendActivitiesByDay(result.activities);
+		    callback(result);
+		}
+	    });
 	}
     };
 
@@ -210,7 +227,17 @@
 	    this.updateRecentActivities(myActivity.day);
 	},
 	removeActivity: function(activity) {
+	    var date = this.Model.date();
 	    this.Model.activities.remove(activity);
+	    this.updateRecentActivities(date);
+	},
+	saveActivities: function() {
+	    var date = this.date();
+	    ct.postActivities(
+		date, this.activities(), function(result) {
+		    ct.DayView.updateActivities(date);
+		    ct.DayView.updateRecentActivities(date);
+		});
 	}
     };
 

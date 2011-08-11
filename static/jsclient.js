@@ -162,6 +162,16 @@
 	    title: ko.observable(""),
 	    activities: ko.observableArray([]),
 	    recentActivities: ko.observableArray([]),
+	    addRecentActivity: function(recentActivity) {
+		var activity = _.clone(recentActivity);
+		activity.day = this.date;
+		activity.comment = "";
+		this.activities.push(activity);
+		this.recentActivities.remove(recentActivity);
+	    },
+	    removeActivity: function(activity) {
+		this.activities.remove(activity);
+	    },
 	    reload: function() {
 		ct.clear();
 		ct.populateDayView(this);

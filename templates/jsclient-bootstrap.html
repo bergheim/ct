@@ -35,12 +35,12 @@
               <th>Kommentar</th>
               <th>Valg</th>
             </tr>
-            {{each activities}}
+            {{each activities()}}
             <tr>
               <td><span data-bind="text: ct.getProjectName(id)"></span></td>
               <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
               <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-              <td><a href="index.html" data-role="button" data-icon="minus" data-iconpos="notext">Slett</a></td>
+              <td><button data-bind="click: function() { removeActivity($value); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button></td>
             </tr>
             {{/each}}
           </table>
@@ -58,7 +58,7 @@
               <td><span data-bind="text: ct.getProjectName(id)"></span></td>
               <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
               <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-	      <td><a href="index.html" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</a></td>
+	      <td><button data-bind="click: function() { addRecentActivity($value); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button></td>
             </tr>
             {{/each}}
           </table>

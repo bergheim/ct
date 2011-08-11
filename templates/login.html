@@ -1,27 +1,43 @@
-{% extends "layout.html" %}
-{% block title %}Login{% endblock %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CT: What have you done?</title>
+    <link rel="stylesheet"  href="http://code.jquery.com/mobile/1.0b1/jquery.mobile-1.0b1.min.css" />
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b1.css') }}">
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
+  </head> 
+  <body> 
+    <div data-role="page" id="jqm-home" class="type-home">
+      <div data-role="header">
+	<h1>Logg deg inn for å registrere timer</h1>
+      </div>
 
-{% block content %}
+      <div data-role="content" data-inset="true">	
+	<form id="form" name="form" method="post" data-ajax="false" action="/login">
+          <fieldset>
+            {{ form.hidden_tag() }}
+            {% if error: %}
+            <p class="feedback">{{ error }}</p>
+            {% endif %}
+	    
+	    <div data-role="fieldcontain">
+	      {{ form.username.label }} {{ form.username }}
+	    </div>
+	    <div data-role="fieldcontain">
+	      {{ form.password.label }} {{ form.password }}
+	    </div>
+            <input type="submit" value="Logg på" />
+	  </fieldset>
+	</form>
+      </div>
+      <div data-role="footer" class="footer">
+        <p>&copy; 2011 The CurrentTime Replacement Project</p>
+      </div>  
+    </div>
+    <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
+  </body>
+</html>
 
-{% from "_formhelpers.html" import render_field, render_css_field %}
-<div id="login">
-    <form id="form" name="form" method="post" action="/login">
-        {{ form.hidden_tag() }}
-        <h1>Login form</h1>
-        <p>Testsak, mest for å sjekke flask++</p>
-
-        {% if error: %}
-        <p class="feedback">{{ error }}</p>
-        {% endif %}
-
-        {{ render_css_field(form.username)}}
-        <div class="spacer"></div>
-        {{ render_css_field(form.password)}}
-
-        <div class="spacer"></div>
-        <button type="submit">Log på</button>
-
-    </form>
-</div>
-
-{% endblock %}

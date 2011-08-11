@@ -125,7 +125,7 @@
 		}
 	    });
 
-	    while (true) {
+	    while (viewModel.recentActivities().length < 5) {
 		if (this.hasData(day)) {
 		    var data = this.getActivities(day);
 		    var include = _.select(data, function(activity) {
@@ -134,11 +134,7 @@
 
 		    activities = activities.concat(include);
 		    excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
-
-		    if (activities.length >= 5) {
-			viewModel.recentActivities(activities);
-			return;
-		    }
+		    viewModel.recentActivities(activities);
 		} else {
 		    var self = this;
 		    self.fetchActivities(day, function() {
@@ -175,7 +171,7 @@
 		activity.day = this.date;
 		activity.comment = "";
 		this.activities.push(activity);
-		this.recentActivities.remove(recentActivity);
+		ct.updateRecentActivities(this);
 	    },
 	    removeActivity: function(activity) {
 		this.activities.remove(activity);

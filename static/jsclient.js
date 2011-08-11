@@ -96,13 +96,13 @@
 	    return this._activitiesByDay.hasOwnProperty(day);
 	},
 	updateActivities: function(viewModel, day) {
+	    if (viewModel.date() != day) {
+		return;
+	    }
+
 	    viewModel.activities.removeAll();
 
 	    if (this.hasData(day)) {
-		if (viewModel.date() != day) {
-		    return;
-		}
-
 		var data = this.getActivities(day);
 		viewModel.activities(data);
 		$.mobile.pageLoading(true);
@@ -115,6 +115,10 @@
 	    };
 	},
 	updateRecentActivities: function(viewModel, currentDate) {
+	    if (viewModel.date() != currentDate) {
+		return;
+	    }
+
 	    viewModel.recentActivities.removeAll();
 
 	    var day = previousDayFromString(currentDate);
@@ -122,22 +126,22 @@
 	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
 	    
 	    while (viewModel.recentActivities().length < 5) {
-		if (this.hasData(day)) {
-		    var data = this.getActivities(day);
-		    var include = _.select(data, function(activity) {
-			return !_.contains(excluded_ids, activity.id);
-		    });
-
-		    activities = activities.concat(include);
-		    excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
-		    viewModel.recentActivities(activities);
-		} else {
+		if (!this.hasData(day)) {
 		    var self = this;
 		    self.fetchActivities(day, function() {
 			self.updateRecentActivities(viewModel, currentDate);
 		    });
 		    return;
 		}
+
+		var data = this.getActivities(day);
+		var include = _.select(data, function(activity) {
+		    return !_.contains(excluded_ids, activity.id);
+		});
+
+		activities = activities.concat(include);
+		excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
+		viewModel.recentActivities(activities);
 		day = previousDayFromString(day);
 	    }
 	},

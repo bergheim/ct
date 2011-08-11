@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import calendar
 from functools import wraps
 from collections import defaultdict
 import ConfigParser, random
@@ -114,7 +115,10 @@ def get_projects():
 @app.route('/api/activities/<int:year>/<int:month>')
 @login_required
 def get_activities(year, month):
-    activities_by_date = defaultdict(lambda: [])
+    ndays = calendar.monthrange(year, month)[1]
+    days = xrange(1, ndays + 1)
+    keys = ["%s-%02d-%02d" % (year, month, day) for day in days]
+    activities_by_date = dict(map(lambda x: (x, []), keys))
     for activity in g.ct.get_activities(year, month):
         date = activity.day.strftime("%Y-%m-%d")
         activities_by_date[date].append({
@@ -123,6 +127,7 @@ def get_activities(year, month):
             'duration': str(activity.duration),
             'day': date
         })
+    
     return jsonify(activities=activities_by_date)
 
 if __name__ == '__main__':

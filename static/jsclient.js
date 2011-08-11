@@ -114,18 +114,31 @@
 	},
 	updateRecentActivities: function(viewModel, currentDate) {
 	    var day = previousDayFromString(currentDate);
-	    if (this.hasData(day)) {
-		if (viewModel.date() != day) {
+	    var activities = [];
+	    var exclude = viewModel.activities();
+
+	    while (true) {
+		if (this.hasData(day)) {
+		    var data = this.getActivities(day);
+		    var exclude_projects = _.pluck(exclude, 'id');
+		    var include = _.select(data, function(activity) {
+			return !_.include(exclude_projects, activity.id);
+		    });
+
+		    activities = activities.concat(include);
+		    exclude = exclude.concat(include);
+		    if (activities.length >= 5) {
+			viewModel.recentActivities(activities);
+			return;
+		    }
+		} else {
+		    var self = this;
+		    self.fetchActivities(day, function() {
+			self.updateRecentActivities(viewModel, currentDate);
+		    });
 		    return;
 		}
-
-		var data = this.getActivities(day);
-		viewModel.recentActivities(data);
-	    } else {
-		var self = this;
-		self.fetchActivities(day, function() {
-		    self.updateRecentActivities(viewModel, day);
-		});
+		day = previousDayFromString(day);
 	    }
 	},
 	fetchActivities: function(day, callback) {

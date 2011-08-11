@@ -26,61 +26,62 @@
           </ul>
         </div> 
       </div>
-      <div data-role="content">{% raw %}
-        <script type="text/html" id="activityTemplate">
-          <table class="activities">
-            <tr>
-              <th>Navn</th>
-              <th>Varighet</th>
-              <th>Kommentar</th>
-              <th>Valg</th>
-            </tr>
-            {{each activities()}}
-            <tr>
-              <td><span data-bind="text: ct.getProjectName(id)"></span></td>
-              <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
-              <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-              <td><button data-bind="click: function() { removeActivity($value); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button></td>
-            </tr>
-            {{/each}}
-          </table>
-        </script>
-        <script type="text/html" id="availableActivitiesTemplate">
-          <table class="activities">
-            <tr>
-              <th>Navn</th>
-              <th>Varighet</th>
-              <th>Kommentar</th>
-              <th>Valg</th>
-            </tr>
-            {{each recentActivities}}
-            <tr>
-              <td><span data-bind="text: ct.getProjectName(id)"></span></td>
-              <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
-              <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-	      <td><button data-bind="click: function() { addRecentActivity($value); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button></td>
-            </tr>
-            {{/each}}
-          </table>
-        </script>{% endraw %}
+      <div data-role="content">
         <h2>Rapporterte aktiviteter</h2>
-        <div class="databound" data-bind='template: { name: "activityTemplate", afterRender: postProcess }'> </div>
+	<table class="activities">
+          <tr>
+            <th>Navn</th>
+            <th>Varighet</th>
+            <th>Kommentar</th>
+            <th>Valg</th>
+          </tr>
+	  <tbody data-bind='template: { name: "activityTemplate", afterRender: postProcess, foreach: activities() }'></tbody>
+	</table>
+
         <h2>Tilgjengelige aktiviteter</h2>
-        <div class="databound" data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess }'> </div>
+	<table class="activities">
+          <tr>
+            <th>Navn</th>
+            <th>Varighet</th>
+            <th>Kommentar</th>
+            <th>Valg</th>
+          </tr>
+          <tbody data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess, foreach: recentActivities() }'> </tbody>
+	</table>
         <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
       </div>
       <div data-role="footer" class="footer">
         <p>&copy; 2011 The CurrentTime Replacement Project</p>
       </div>  
     </div>
+
+    {% raw %}
+    <script type="text/html" id="activityTemplate">
+      <tr>
+        <td><span data-bind="text: ct.getProjectName(id)"></span></td>
+        <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
+        <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
+        <td><button data-bind="click: function() { ct.DayView.removeActivity($data); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button></td>
+      </tr>
+    </script>
+    <script type="text/html" id="availableActivitiesTemplate">
+      <tr>
+        <td><span data-bind="text: ct.getProjectName(id)"></span></td>
+        <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
+        <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
+	<td><button data-bind="click: function() { ct.DayView.addRecentActivity($data); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button></td>
+      </tr>
+    </script>
+    {% endraw %}
+
+    <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='underscore-min.js') }}"></script>
+    <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.address-1.4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.tmpl.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='knockout-1.2.1.js') }}"></script>
   </body>
-  <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='underscore-min.js') }}"></script>
-  <script src="{{ url_for('static', filename='jquery.address-1.4.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
-  <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
-  <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
-  <script src="{{ url_for('static', filename='jquery.tmpl.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='knockout-1.2.1.js') }}"></script>
 </html>
 

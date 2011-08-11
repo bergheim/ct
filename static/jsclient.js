@@ -1,5 +1,29 @@
 (function() {
     var dayViewUrl = "#/day";
+    var createDayViewModel = function() {
+	var viewModel = {
+	    home: dayViewUrl,
+	    date: ko.observable(""),
+	    title: ko.observable(""),
+	    activities: ko.observableArray([]),
+	    recentActivities: ko.observableArray([]),
+	    reload: function() {
+		ct.clear();
+		ct.DayView.populate();
+	    },
+	    postProcess: function(elements) {
+		elements.find("input, textarea").each(function() { $(this).textinput(); });
+		elements.find("[data-role=button]").each(function() { $(this).button(); });
+	    }
+	};
+	viewModel.next = ko.dependentObservable(function() {
+	    return getNextDayUrl(this.date());
+	}, viewModel);
+	viewModel.prev = ko.dependentObservable(function() {
+	    return getPreviousDayUrl(this.date());
+	}, viewModel);
+	return viewModel;
+    }
 
     var getDateFromString = function(s) {
 	return Date.parseExact(s, "yyyy-MM-dd") || Date.today();
@@ -58,6 +82,7 @@
 	this._isFetchingActivities = false;
 	this._projects = [];
 	this._activitiesByDay = [];
+	this.DayView.Model = createDayViewModel();
 
 	var self = this;
 	$.getJSON('/api/projects', function(data) {
@@ -68,13 +93,6 @@
     CurrentTime.prototype = {
 	clear: function() {
 	    this._activitiesByDay = [];
-	},
-	populateDayView: function(viewModel) {
-	    var date = getSelectedDate();
-	    viewModel.date(date);
-	    viewModel.title(getTitleFromString(date));
-	    this.updateActivities(viewModel, date);
-	    this.updateRecentActivities(viewModel, date);
 	},
 	getProjectName: function(id) {
 	    return this._projects[id];
@@ -90,60 +108,12 @@
 	    });
 	},
 	getActivities: function(day) {
-	    return this._activitiesByDay[day];
+	    return _.map(this._activitiesByDay[day], function(activity) {
+		return _.clone(activity);
+	    });
 	},
 	hasData: function(day) {
 	    return this._activitiesByDay.hasOwnProperty(day);
-	},
-	updateActivities: function(viewModel, day) {
-	    if (viewModel.date() != day) {
-		return;
-	    }
-
-	    viewModel.activities.removeAll();
-
-	    if (this.hasData(day)) {
-		var data = this.getActivities(day);
-		viewModel.activities(data);
-		$.mobile.pageLoading(true);
-	    } else {
-		var self = this;
-		$.mobile.pageLoading();
-		self.fetchActivities(day, function() {
-		    self.updateActivities(viewModel, day);
-		});
-	    };
-	},
-	updateRecentActivities: function(viewModel, currentDate) {
-	    if (viewModel.date() != currentDate) {
-		return;
-	    }
-
-	    viewModel.recentActivities.removeAll();
-
-	    var day = previousDayFromString(currentDate);
-	    var activities = [];
-	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
-	    
-	    while (viewModel.recentActivities().length < 5) {
-		if (!this.hasData(day)) {
-		    var self = this;
-		    self.fetchActivities(day, function() {
-			self.updateRecentActivities(viewModel, currentDate);
-		    });
-		    return;
-		}
-
-		var data = this.getActivities(day);
-		var include = _.select(data, function(activity) {
-		    return !_.contains(excluded_ids, activity.id);
-		});
-
-		activities = activities.concat(include);
-		excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
-		viewModel.recentActivities(activities);
-		day = previousDayFromString(day);
-	    }
 	},
 	fetchActivities: function(day, callback) {
 	    var self = this;
@@ -157,46 +127,102 @@
 	    self._promise.always(callback);
 	}
     };
+
+    CurrentTime.prototype.DayView = {
+	populate: function() {
+	    var date = getSelectedDate();
+	    var title = getTitleFromString(date);
+	    this.Model.date(date);
+	    this.Model.title(title);
+	    this.updateActivities(date);
+	    this.updateRecentActivities(date);
+	},
+	updateActivities: function(currentDate) {
+	    var viewModel = this.Model;
+	    if (viewModel.date() != currentDate) {
+		return;
+	    }
+
+	    viewModel.activities.removeAll();
+
+	    if (ct.hasData(currentDate)) {
+		var data = ct.getActivities(currentDate);
+		viewModel.activities(data);
+		$.mobile.pageLoading(true);
+	    } else {
+		var self = this;
+		$.mobile.pageLoading();
+		ct.fetchActivities(currentDate, function() {
+		    self.updateActivities(currentDate);
+		});
+	    };
+	},
+	updateRecentActivities: function(currentDate) {
+	    var viewModel = this.Model;
+	    if (viewModel.date() != currentDate) {
+		return;
+	    }
+
+	    viewModel.recentActivities.removeAll();
+
+	    var day = previousDayFromString(currentDate);
+	    var activities = [];
+	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
+	    
+	    while (viewModel.recentActivities().length < 5) {
+		if (!ct.hasData(day)) {
+		    var self = this;
+		    ct.fetchActivities(day, function() {
+			self.updateRecentActivities(currentDate);
+		    });
+		    return;
+		}
+
+		var data = ct.getActivities(day);
+		var include = _.select(data, function(activity) {
+		    return !_.contains(excluded_ids, activity.id);
+		});
+
+		activities = activities.concat(include);
+		excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
+		viewModel.recentActivities(activities);
+		day = previousDayFromString(day);
+	    }
+	},
+	addRecentActivity: function(recentActivity) {
+	    var activity = _.clone(recentActivity);
+	    activity.day = this.Model.date();
+	    activity.comment = "";
+	    this.addActivity(activity);
+	},
+	addActivity: function(activity) {
+	    var current = _.detect(this.Model.activities(), function(a) {
+		return (a.id == activity.id);
+	    });
+
+	    if (current) {
+		this.Model.activities.remove(current);
+	    }
+
+	    var myActivity = myActivity || _.clone(activity);
+	    myActivity.day = this.Model.date();
+	    this.Model.activities.push(myActivity);
+	    this.updateRecentActivities(myActivity.day);
+	},
+	removeActivity: function(activity) {
+	    this.Model.activities.remove(activity);
+	}
+    };
+
     
     $(document).bind("pagebeforecreate", function() {
 	var ct = window.ct = new CurrentTime();
-	var dayViewModel = {
-	    home: dayViewUrl,
-	    date: ko.observable(""),
-	    title: ko.observable(""),
-	    activities: ko.observableArray([]),
-	    recentActivities: ko.observableArray([]),
-	    addRecentActivity: function(recentActivity) {
-		var activity = _.clone(recentActivity);
-		activity.day = this.date();
-		activity.comment = "";
-		this.activities.push(activity);
-		ct.updateRecentActivities(this, activity.day);
-	    },
-	    removeActivity: function(activity) {
-		this.activities.remove(activity);
-	    },
-	    reload: function() {
-		ct.clear();
-		ct.populateDayView(this);
-	    },
-	    postProcess: function(elements) {
-		elements.find("input, textarea").each(function() { $(this).textinput(); });
-		elements.find("[data-role=button]").each(function() { $(this).button(); });
-	    }
-	};
-	dayViewModel.next = ko.dependentObservable(function() {
-	    return getNextDayUrl(this.date());
-	}, dayViewModel);
-	dayViewModel.prev = ko.dependentObservable(function() {
-	    return getPreviousDayUrl(this.date());
-	}, dayViewModel);
 
-        $.address.change(function(event) {
-	    ct.populateDayView(dayViewModel);
+	$.address.change(function(event) {
+	    ct.DayView.populate();
 	});
 
-	ko.applyBindings(dayViewModel);
+	ko.applyBindings(ct.DayView.Model);
     });
 
     $(document).bind("mobileinit", function() {

@@ -162,15 +162,16 @@ def set_activities_by_day(year, month, day):
         g.ct.report_activity(activity)
 
     for data in to_delete:
+        data['duration'] = 0
         activity = activity_from_dict(data)
-        g.ct.delete_activity(activity)
+        g.ct.report_activity(activity)
     return get_activities_by_day(year, month, day)
 
 def activity_from_dict(data):
         year, month, day = [int(x) for x in data['day'].split("-")]
         date = datetime.date(year, month, day)
         duration = Decimal(data['duration'])
-        return Activity(date, data['id'], data['duration'], data['comment'])
+        return Activity(date, data['id'], duration, data['comment'])
 
 if __name__ == '__main__':
     host = config.get("server", "host")

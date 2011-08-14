@@ -137,7 +137,16 @@ def index():
 @app.route('/api/projects')
 @login_required
 def get_projects():
-    projects = dict([(p.id, p.name) for p in g.ct.get_projects()])
+    projects = {}
+    for p in g.ct.get_projects():
+        projects[p.id] = {
+            'id': p.id,
+            'name': p.name,
+            'project_name': p.project_name,
+            'task_name': p.task_name,
+            'subtask_name': p.subtask_name,
+            'activity_name': p.activity_name,
+        }
     return jsonify(projects=projects)
 
 @app.route('/api/activities/<int:year>/<int:month>')

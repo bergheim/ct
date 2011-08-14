@@ -100,7 +100,7 @@
 	    this._activitiesByDay = [];
 	},
 	getProjectName: function(id) {
-	    return this._projects[id];
+	    return this._projects[id].name;
 	},
 	extendActivitiesByDay: function(activitiesByDay) {
 	    var self = this;

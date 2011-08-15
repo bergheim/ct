@@ -10,22 +10,7 @@
   </head> 
   <body> 
     <div data-role="page" id="day" class="type-home">
-      <div data-role="header">
-        <a href="#" data-bind="attr: { href: home }" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
-        <h1><span data-bind="text: title"></span></h1>
-        <div id="nav-bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
-          <a href="#" data-bind="attr: { href: prev }" data-role="button" data-icon="arrow-l" data-iconpos="notext" alt="Forrige dag">&lt;</a>
-          <a href="#" data-bind="attr: { href: next }" data-role="button" data-icon="arrow-r" data-iconpos="notext" alt="Neste dag">&gt;</a>
-          <a href="#" data-bind="click: reload" data-role="button" data-icon="refresh" data-iconpos="notext" alt="Last data på nytt">↻</a>
-        </div>
-        <div data-role="navbar">
-          <ul>
-            <li><a href="#dayView" class="ui-btn-active" data-role="button">Dag</a></li>
-            <li><a href="#weekView" data-role="button">Uke</a></li>
-            <li><a href="#monthView" data-role="button">Måned</a></li>
-          </ul>
-        </div> 
-      </div>
+      <div data-role="header" data-bind="template: { name: 'headerTemplate' }"></div>
       <div data-role="content">
         <h2>Rapporterte aktiviteter</h2>
 	<table class="activities">
@@ -54,9 +39,7 @@
           <tbody data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess, foreach: recentActivities() }'> </tbody>
 	</table>
       </div>
-      <div data-role="footer" class="footer">
-        <p>&copy; 2011 The CurrentTime Replacement Project</p>
-      </div>  
+      <div data-role="footer" class="footer" data-bind="template: { name: 'footerTemplate' }"></div>  
     </div>
 
     <div data-role="page" id="week">
@@ -74,7 +57,11 @@
     </div>
 
     <div data-role="page" id="monthView">
-      måned
+      <div data-role="header" data-bind="template: { name: 'headerTemplate' }"></div>
+      <div data-role="content">
+        No content!!!
+      </div>
+      <div data-role="footer" class="footer" data-bind="template: { name: 'footerTemplate' }"></div>  
     </div>
 
     <div data-role="page" id="add">
@@ -114,6 +101,25 @@
     </div>
 
     {% raw %}
+    <script type="text/html" id="headerTemplate">
+      <a href="#" data-bind="attr: { href: home }" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
+      <h1><span data-bind="text: title"></span></h1>
+      <div id="nav-bar" data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
+        <a href="#" data-bind="attr: { href: prev }" data-role="button" data-icon="arrow-l" data-iconpos="notext" alt="Forrige dag">&lt;</a>
+        <a href="#" data-bind="attr: { href: next }" data-role="button" data-icon="arrow-r" data-iconpos="notext" alt="Neste dag">&gt;</a>
+        <a href="#" data-bind="click: reload" data-role="button" data-icon="refresh" data-iconpos="notext" alt="Last data på nytt">↻</a>
+      </div>
+      <div data-role="navbar">
+        <ul>
+          <li><a href="#/day" class="ui-btn-active" data-role="button">Dag</a></li>
+          <li><a href="#/week" data-role="button">Uke</a></li>
+          <li><a href="#/month" id="monthButton" data-role="button">Måned</a></li>
+        </ul>
+      </div> 
+    </script>
+    <script type="text/html" id="footerTemplate">
+        <p>&copy; 2011 The CurrentTime Replacement Project</p>
+    </script>
     <script type="text/html" id="activityTemplate">
       <tr>
         <td class="col-name">

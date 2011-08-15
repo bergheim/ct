@@ -1,6 +1,5 @@
 (function() {
     var dayViewUrl = "#/day";
-
     var createActivityViewModel = function() {
 	var viewModel = {
 	    date: ko.observable(""),
@@ -118,6 +117,7 @@
 	this._activitiesByDay = [];
 	this.DayView.Model = createDayViewModel();
 	this.ActivityView.Model = createActivityViewModel();
+	//this.MonthView.Model = createMonthViewModel();
 
 	var self = this;
 	$.getJSON('/api/projects', function(data) {
@@ -300,8 +300,8 @@
     var ct = window.ct = new CurrentTime();
 
     $(document).bind("mobileinit", function() {
-	$.mobile.ajaxEnabled = false;
-	$.mobile.hashListeningEnabled = false;
+        $.mobile.ajaxEnabled = false;
+        $.mobile.hashListeningEnabled = false;
     });
 
     $(document).bind("pagebeforecreate", function() {
@@ -342,8 +342,12 @@
     // isn't removed when we click the navigation links.
     $('a').live("vclick", function() {});
 
+    $('#asdf').click(function() {
+        alert('lol');
+        return false;
+        //$.mobile.changePage("#monthView", {  } );
+      });
     $('#addProject').click(function() {
-
         lastPage = window.location.pathname
         $.mobile.changePage("#weekView", { role: "popup" } );
       });

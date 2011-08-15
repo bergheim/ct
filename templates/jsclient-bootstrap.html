@@ -9,7 +9,7 @@
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
   </head> 
   <body> 
-    <div data-role="page" id="dayView" class="type-home">
+    <div data-role="page" id="day" class="type-home">
       <div data-role="header">
         <a href="#" data-bind="attr: { href: home }" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
         <h1><span data-bind="text: title"></span></h1>
@@ -39,6 +39,7 @@
 	  </thead>
 	  <tbody data-bind='template: { name: "activityTemplate", afterRender: postProcess, foreach: activities() }'></tbody>
 	</table>
+        <a href="#/add" data-role="button" data-icon="plus">Legg til</a>
 	<button data-bind="click: ct.DayView.saveActivities">Lagre</button>
         <h2>Tilgjengelige aktiviteter</h2>
         <table class="activities">
@@ -51,15 +52,14 @@
                   </tr>
           </thead>
           <tbody data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess, foreach: recentActivities() }'> </tbody>
-        </table>
-        <a href="#weekView" id="addProject" data-role="button" data-icon="plus" data-transition="pop" data-rel="dialog">Legg til prosjekt</a>
+	</table>
       </div>
       <div data-role="footer" class="footer">
         <p>&copy; 2011 The CurrentTime Replacement Project</p>
       </div>  
     </div>
 
-    <div data-role="page" id="weekView">
+    <div data-role="page" id="week">
       <div data-role="header">
         <h1>Dialog</h1>
       </div>
@@ -75,6 +75,42 @@
 
     <div data-role="page" id="monthView">
       måned
+    </div>
+
+    <div data-role="page" id="add">
+      <div data-role="header" data-theme="e">
+	<h1>Aktivitet</h1>
+      </div>
+
+      <div data-role="content" data-theme="d">	
+	<h2>Rediger</h2>
+	<form>
+	  <fieldset>
+	    <div>
+	      <label for="project">Prosjekt</label>
+	      <select name="project" data-bind="options: projects,
+						optionsCaption: 'Velg...',
+						optionsText: 'name',
+						optionsValue: 'id',
+						value: project_id">
+	      </select>
+	    </div>
+	    <div>
+	      <label for="duration">Timer</label>
+	      <input name="duration" type="text" data-bind='value: duration, valueUpdate: "afterkeydown"' />
+	    </div>
+	    <div>
+	      <label for="comment">Kommentar</label>
+	      <textarea name="comment" data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
+	    </div>
+	  </fieldset>
+	  <button data-bind="click: add">Lagre</button>
+	</form>
+      </div>
+      
+      <div data-role="footer">
+        <p>&copy; 2011 The CurrentTime Replacement Project</p>
+      </div>
     </div>
 
     {% raw %}
@@ -130,12 +166,12 @@
 
     <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>
     <script src="{{ url_for('static', filename='underscore-min.js') }}"></script>
-    <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.address-1.4.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.tmpl.min.js') }}"></script>
     <script src="{{ url_for('static', filename='knockout-1.2.1.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.address-1.4.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
+    <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
   </body>
 </html>
 

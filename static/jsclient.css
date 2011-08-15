@@ -2,11 +2,29 @@
     margin: 0;
 }
 
-table.activities input.duration {
+table.activities thead {
+    text-align: left;
+}
+
+table.activities input.duration,
+table.activities textarea {
     width: 2em;
 }
 
 table.activities input.duration,
 table.activities textarea {
     height: 1.2em;
+}
+
+table.activities .col-name div.liner {
+    width: 120px;
+}
+table.activities .col-duration div.liner {
+    width: 60px;
+}
+table.activities .col-comment div.liner {
+    width: 60px;
+}
+table.activities .col-actions div.liner {
+    width: 26px;
 }

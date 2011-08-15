@@ -29,24 +29,28 @@
       <div data-role="content">
         <h2>Rapporterte aktiviteter</h2>
 	<table class="activities">
-          <tr>
-            <th>Navn</th>
-            <th>Varighet</th>
-            <th>Kommentar</th>
-            <th>Valg</th>
-          </tr>
+	  <thead>
+            <tr>
+              <th class="col-name"><div class="liner">Navn</div></th>
+              <th class="col-duration"><div class="liner">Timer</div></th>
+              <th class="col-comment"><div class="liner">Om</div></th>
+              <th class="col-actions"><div class="liner">Valg</div></th>
+            </tr>
+	  </thead>
 	  <tbody data-bind='template: { name: "activityTemplate", afterRender: postProcess, foreach: activities() }'></tbody>
 	</table>
 	<button data-bind="click: ct.DayView.saveActivities">Lagre</button>
 
         <h2>Tilgjengelige aktiviteter</h2>
 	<table class="activities">
-          <tr>
-            <th>Navn</th>
-            <th>Varighet</th>
-            <th>Kommentar</th>
-            <th>Valg</th>
-          </tr>
+	  <thead>
+            <tr>
+              <th class="col-name"><div class="liner">Navn</div></th>
+              <th class="col-duration"><div class="liner">Timer</div></th>
+              <th class="col-comment"><div class="liner">Om</div></th>
+              <th class="col-actions"><div class="liner">Valg</div></th>
+            </tr>
+	  </thead>
           <tbody data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess, foreach: recentActivities() }'> </tbody>
 	</table>
         <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
@@ -59,18 +63,50 @@
     {% raw %}
     <script type="text/html" id="activityTemplate">
       <tr>
-        <td><span data-bind="text: ct.getProjectName(id)"></span></td>
-        <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
-        <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-        <td><button data-bind="click: function() { ct.DayView.removeActivity($data); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button></td>
+        <td class="col-name">
+	  <div class="liner">
+	    <div data-bind="text: ct.getProjectShortName(id), attr: { title: ct.getProjectLongName(id) }"></div>
+	  </div>
+	</td>
+	<td class="col-duration">
+	  <div class="liner">
+	    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
+	  </div>
+	</td>
+	<td class="col-comment">
+	  <div class="liner">
+	    <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
+	  </div>
+	</td>
+	<td class="col-actions">
+	  <div class="liner">
+	    <button data-bind="click: function() { ct.DayView.removeActivity($data); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button>
+	  </div>
+	</td>
       </tr>
     </script>
     <script type="text/html" id="availableActivitiesTemplate">
       <tr>
-        <td><span data-bind="text: ct.getProjectName(id)"></span></td>
-        <td><input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' /></td>
-        <td><textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea></td>
-	<td><button data-bind="click: function() { ct.DayView.addRecentActivity($data); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button></td>
+        <td class="col-name">
+	  <div class="liner">
+	    <div data-bind="text: ct.getProjectShortName(id), attr: { title: ct.getProjectLongName(id) }"></div>
+	  </div>
+	</td>
+	<td class="col-duration">
+	  <div class="liner">
+	    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
+	  </div>
+	</td>
+	<td class="col-comment">
+	  <div class="liner">
+	    <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
+	  </div>
+	</td>
+	<td class="col-actions">
+	  <div class="liner">
+	    <button data-bind="click: function() { ct.DayView.addRecentActivity($data); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button>
+	  </div>
+	</td>
       </tr>
     </script>
     {% endraw %}

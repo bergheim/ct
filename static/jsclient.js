@@ -99,7 +99,11 @@
 	clear: function() {
 	    this._activitiesByDay = [];
 	},
-	getProjectName: function(id) {
+	getProjectShortName: function(id) {
+	    var p = this._projects[id];
+	    return p.activity_name || p.subtask_name;
+	},
+	getProjectLongName: function(id) {
 	    return this._projects[id].name;
 	},
 	extendActivitiesByDay: function(activitiesByDay) {

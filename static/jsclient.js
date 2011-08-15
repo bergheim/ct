@@ -163,7 +163,6 @@
 	    this.updateRecentActivities(date);
 	},
 	updateActivities: function(currentDate) {
-                      return;
 	    var viewModel = this.Model;
 	    if (viewModel.date() != currentDate) {
 		return;
@@ -184,7 +183,6 @@
 	    };
 	},
 	updateRecentActivities: function(currentDate) {
-                      return;
 	    var viewModel = this.Model;
 	    if (viewModel.date() != currentDate) {
 		return;

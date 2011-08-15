@@ -185,8 +185,11 @@
 	    var day = previousDayFromString(currentDate);
 	    var activities = [];
 	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
+
+      var earliestDateLimit = getDateFromString(currentDate).add(-30).day();
+      var dayDate = getDateFromString(day).day();
 	    
-	    while (viewModel.recentActivities().length < 5) {
+	    while (viewModel.recentActivities().length < 5 && dayDate > earliestDateLimit) {
 		if (!ct.hasData(day)) {
 		    var self = this;
 		    ct.fetchActivities(day, function() {
@@ -204,6 +207,7 @@
 		excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
 		viewModel.recentActivities(activities);
 		day = previousDayFromString(day);
+      dayDate = getDateFromString(day).day();
 	    }
 	},
 	addRecentActivity: function(recentActivity) {

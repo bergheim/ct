@@ -23,7 +23,6 @@
     };
 
     var createDayViewModel = function() {
-    var lastPage = "";
 	var viewModel = {
 	    home: dayViewUrl,
 	    date: ko.observable(""),
@@ -341,17 +340,4 @@
     // Fixes bug in jQuery Mobile. Without this, the ui-btn-active
     // isn't removed when we click the navigation links.
     $('a').live("vclick", function() {});
-
-    $('#asdf').click(function() {
-        alert('lol');
-        return false;
-        //$.mobile.changePage("#monthView", {  } );
-      });
-    $('#addProject').click(function() {
-        lastPage = window.location.pathname
-        $.mobile.changePage("#weekView", { role: "popup" } );
-      });
-    $('.back').click(function() {
-        $.mobile.changePage(lastPage, { reverse: "true" } );
-      });
 }());

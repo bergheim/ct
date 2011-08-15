@@ -52,7 +52,10 @@
     var getSelectedDate = function() {
 	var url = $.address.value();
 	var parts = url.split("/");
-	return parts[2] || currentDate();
+	var s = parts[2];
+	// Make sure we have a valid date
+	var d = getDateFromString(s);
+	return  getStringFromDate(d);
     };
 
     var getDayViewUrl = function(s) {
@@ -129,7 +132,7 @@
 		    self._isFetchingActivities = false;
 		});
 	    }
-	    self._promise.always(callback);
+	    self._promise.done(callback);
 	},
 	postActivities: function(day, activities, callback) {
 	    var url = setActivityUrl(day);

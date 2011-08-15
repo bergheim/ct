@@ -1,5 +1,28 @@
 (function() {
     var dayViewUrl = "#/day";
+
+    var createActivityViewModel = function() {
+	var viewModel = {
+	    date: ko.observable(""),
+	    projects: ko.observableArray([]),
+	    project_id: ko.observable(""),
+	    duration: ko.observable(""),
+	    comment: ko.observable(""),
+	    add: function() {
+		ct.addActivity(this.date(),
+			       {
+				   comment: this.comment(),
+				   duration: this.duration(),
+				   id: this.project_id(),
+				   day: this.date()
+			       });
+		window.history.back();
+	    },
+	};
+
+	return viewModel;
+    };
+
     var createDayViewModel = function() {
 	var viewModel = {
 	    home: dayViewUrl,
@@ -16,12 +39,14 @@
 		elements.find("[data-role=button]").each(function() { $(this).button(); });
 	    }
 	};
+
 	viewModel.next = ko.dependentObservable(function() {
 	    return getNextDayUrl(this.date());
 	}, viewModel);
 	viewModel.prev = ko.dependentObservable(function() {
 	    return getPreviousDayUrl(this.date());
 	}, viewModel);
+
 	return viewModel;
     }
 
@@ -91,6 +116,7 @@
 	this._projects = [];
 	this._activitiesByDay = [];
 	this.DayView.Model = createDayViewModel();
+	this.ActivityView.Model = createActivityViewModel();
 
 	var self = this;
 	$.getJSON('/api/projects', function(data) {
@@ -101,6 +127,12 @@
     CurrentTime.prototype = {
 	clear: function() {
 	    this._activitiesByDay = [];
+	},
+	getProjects: function() {
+	    return _.sortBy(_.values(this._projects),
+			    function(p) {
+				return p.name;
+			    });
 	},
 	getProjectShortName: function(id) {
 	    var p = this._projects[id];
@@ -115,10 +147,23 @@
 		self._activitiesByDay[day] = activities;
 	    });
 	},
-	getActivities: function(day) {
-	    return _.map(this._activitiesByDay[day], function(activity) {
-		return _.clone(activity);
+	addActivity: function(day, activity) {
+	    var existing = _.detect(this._activitiesByDay[day], function(a) {
+		return (a.id == activity.id);
 	    });
+
+	    if (existing) {
+		this.removeActivity(day, existing);
+	    }
+
+
+	    this._activitiesByDay[day].push(activity);
+	},
+	removeActivity: function(day, activity) {
+	    this._activitiesByDay[day] = _.without(this._activitiesByDay[day], activity);
+	},
+	getActivities: function(day) {
+	    return this._activitiesByDay[day];
 	},
 	hasData: function(day) {
 	    return this._activitiesByDay.hasOwnProperty(day);
@@ -151,6 +196,13 @@
 	    });
 	}
     };
+
+    CurrentTime.prototype.ActivityView = {
+	populate: function() {
+	    this.Model.date(currentDate());
+	    this.Model.projects(ct.getProjects());
+	}
+    }
 
     CurrentTime.prototype.DayView = {
 	populate: function() {
@@ -214,28 +266,20 @@
 	    }
 	},
 	addRecentActivity: function(recentActivity) {
+	    var date = this.Model.date();
 	    var activity = _.clone(recentActivity);
-	    activity.day = this.Model.date();
+	    activity.day = date;
 	    activity.comment = "";
-	    this.addActivity(activity);
-	},
-	addActivity: function(activity) {
-	    var current = _.detect(this.Model.activities(), function(a) {
-		return (a.id == activity.id);
-	    });
+	    ct.addActivity(date, activity);
 
-	    if (current) {
-		this.Model.activities.remove(current);
-	    }
-
-	    var myActivity = myActivity || _.clone(activity);
-	    myActivity.day = this.Model.date();
-	    this.Model.activities.push(myActivity);
-	    this.updateRecentActivities(myActivity.day);
+	    this.updateActivities(date);
+	    this.updateRecentActivities(date);
 	},
 	removeActivity: function(activity) {
 	    var date = this.Model.date();
-	    this.Model.activities.remove(activity);
+	    ct.removeActivity(date, activity);
+
+	    this.updateActivities(date);
 	    this.updateRecentActivities(date);
 	},
 	saveActivities: function() {
@@ -248,20 +292,37 @@
 	}
     };
 
-    
-    $(document).bind("pagebeforecreate", function() {
-	var ct = window.ct = new CurrentTime();
-
-	$.address.change(function(event) {
-	    ct.DayView.populate();
-	});
-
-	ko.applyBindings(ct.DayView.Model);
-    });
+    var ct = window.ct = new CurrentTime();
 
     $(document).bind("mobileinit", function() {
 	$.mobile.ajaxEnabled = false;
 	$.mobile.hashListeningEnabled = false;
+    });
+
+    $(document).bind("pagebeforecreate", function() {
+	$.address.change(function(event) {
+	    var page = event.value.substr(1) || "day";
+	    var activePage = $.mobile.activePage[0].id;
+
+	    if (page.match(/^add/)) {
+		if (activePage != "add") {
+		    $.mobile.changePage("#add",
+					{ role: "dialog", transition: "pop", changeHash: false});
+		}
+		ct.ActivityView.populate();
+	    }
+
+	    if (page.match(/^day/)) {
+		if (activePage != "day") {
+		    $.mobile.changePage("#day",
+					{ reverse: true, transition: "pop", changeHash: false});
+		}
+		ct.DayView.populate();
+	    }
+	});
+
+	ko.applyBindings(ct.DayView.Model, document.getElementById('day'));
+	ko.applyBindings(ct.ActivityView.Model, document.getElementById('add'));
     });
 
     // Fixes bug in jQuery Mobile. Without this, the ui-btn-active

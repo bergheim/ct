@@ -9,7 +9,7 @@
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
   </head> 
   <body> 
-    <div data-role="page" id="jqm-home" class="type-home">
+    <div data-role="page" id="dayView" class="type-home">
       <div data-role="header">
         <a href="#" data-bind="attr: { href: home }" data-role="button" data-icon="home" class="ui-btn-left">I dag</a>
         <h1><span data-bind="text: title"></span></h1>
@@ -20,9 +20,9 @@
         </div>
         <div data-role="navbar">
           <ul>
-            <li><a href="#" class="ui-btn-active">Dag</a></li>
-            <li><a href="#">Uke</a></li>
-            <li><a href="#">Måned</a></li>
+            <li><a href="#dayView" class="ui-btn-active" data-role="button">Dag</a></li>
+            <li><a href="#weekView" data-role="button">Uke</a></li>
+            <li><a href="#monthView" data-role="button">Måned</a></li>
           </ul>
         </div> 
       </div>
@@ -40,24 +40,41 @@
 	  <tbody data-bind='template: { name: "activityTemplate", afterRender: postProcess, foreach: activities() }'></tbody>
 	</table>
 	<button data-bind="click: ct.DayView.saveActivities">Lagre</button>
-
         <h2>Tilgjengelige aktiviteter</h2>
-	<table class="activities">
-	  <thead>
-            <tr>
-              <th class="col-name"><div class="liner">Navn</div></th>
-              <th class="col-duration"><div class="liner">Timer</div></th>
-              <th class="col-comment"><div class="liner">Om</div></th>
-              <th class="col-actions"><div class="liner">Valg</div></th>
-            </tr>
-	  </thead>
+        <table class="activities">
+          <thead>
+                  <tr>
+                    <th class="col-name"><div class="liner">Navn</div></th>
+                    <th class="col-duration"><div class="liner">Timer</div></th>
+                    <th class="col-comment"><div class="liner">Om</div></th>
+                    <th class="col-actions"><div class="liner">Valg</div></th>
+                  </tr>
+          </thead>
           <tbody data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess, foreach: recentActivities() }'> </tbody>
-	</table>
-        <a href="index.html" data-role="button" data-icon="plus">Legg til prosjekt</a>
+        </table>
+        <a href="#weekView" id="addProject" data-role="button" data-icon="plus" data-transition="pop" data-rel="dialog">Legg til prosjekt</a>
       </div>
       <div data-role="footer" class="footer">
         <p>&copy; 2011 The CurrentTime Replacement Project</p>
       </div>  
+    </div>
+
+    <div data-role="page" id="weekView">
+      <div data-role="header">
+        <h1>Dialog</h1>
+      </div>
+      <div data-role="content">  
+        <h2>Popup</h2>
+        test
+        <p><a href="#dayView" class="back" data-role="button" data-inline="true" data-icon="back">Back</a></p> 
+      </div>
+      <div data-role="footer">
+        <h4>Page Footer</h4>
+      </div>
+    </div>
+
+    <div data-role="page" id="monthView">
+      måned
     </div>
 
     {% raw %}

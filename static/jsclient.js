@@ -1,5 +1,6 @@
 (function() {
     var dayViewUrl = "#/day";
+    var monthViewUrl = "#/month";
     var createActivityViewModel = function() {
 	var viewModel = {
 	    date: ko.observable(""),
@@ -44,6 +45,28 @@
 	}, viewModel);
 	viewModel.prev = ko.dependentObservable(function() {
 	    return getPreviousDayUrl(this.date());
+	}, viewModel);
+
+	return viewModel;
+    }
+
+    var createMonthViewModel = function() {
+	var viewModel = {
+	    home: monthViewUrl,
+	    date: ko.observable(""),
+	    title: ko.observable(""),
+	    activities: ko.observableArray([]),
+	    reload: function() {
+		ct.clear();
+		ct.MonthView.populate();
+	    },
+	};
+
+	viewModel.next = ko.dependentObservable(function() {
+	    return getNextMonthUrl(this.date());
+	}, viewModel);
+	viewModel.prev = ko.dependentObservable(function() {
+	    return getPreviousMonthUrl(this.date());
 	}, viewModel);
 
 	return viewModel;
@@ -96,6 +119,16 @@
 	return getDayViewUrl(day);
     };
 
+    var getNextMonthUrl = function(s) {
+	var day = nextDayFromString(s);
+	return getDayViewUrl(day);
+    };
+
+    var getPreviousMonthUrl = function(s) {
+	var day = previousDayFromString(s);
+	return getDayViewUrl(day);
+    };
+
     var getActivitiesUrl = function(s) { 
 	var d = getDateFromString(s);
 	return "/api/activities/" + d.toString("yyyy/MM");
@@ -115,8 +148,8 @@
 	this._projects = [];
 	this._activitiesByDay = [];
 	this.DayView.Model = createDayViewModel();
+	this.MonthView.Model = createMonthViewModel();
 	this.ActivityView.Model = createActivityViewModel();
-	//this.MonthView.Model = createMonthViewModel();
 
 	var self = this;
 	$.getJSON('/api/projects', function(data) {
@@ -245,8 +278,8 @@
 	    var activities = [];
 	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
 
-      var earliestDateLimit = getDateFromString(currentDate).add(-30).day();
-      var dayDate = getDateFromString(day).day();
+            var earliestDateLimit = getDateFromString(currentDate).add(-30).day();
+            var dayDate = getDateFromString(day).day();
 	    
 	    while (viewModel.recentActivities().length < 5 && dayDate > earliestDateLimit) {
 		if (!ct.hasData(day)) {
@@ -266,7 +299,7 @@
 		excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
 		viewModel.recentActivities(activities);
 		day = previousDayFromString(day);
-      dayDate = getDateFromString(day).day();
+                dayDate = getDateFromString(day).day();
 	    }
 	},
 	addRecentActivity: function(recentActivity) {
@@ -293,6 +326,37 @@
 		    ct.DayView.updateActivities(date);
 		    ct.DayView.updateRecentActivities(date);
 		});
+	}
+    };
+
+    CurrentTime.prototype.MonthView = {
+	populate: function() {
+	    var date = getSelectedDate();
+	    var title = getTitleFromString(date);
+	    this.Model.date(date);
+	    this.Model.title(title);
+	    this.updateActivities(date);
+	},
+	updateActivities: function(currentDate) {
+	    var viewModel = this.Model;
+	    if (viewModel.date() != currentDate) {
+		return;
+	    }
+
+	    viewModel.activities.removeAll();
+
+	    if (ct.hasData(currentDate)) {
+                console.log(currentDate);
+		var data = ct.getActivities(currentDate);
+		viewModel.activities(data);
+		$.mobile.pageLoading(true);
+	    } else {
+		var self = this;
+		$.mobile.pageLoading();
+		ct.fetchActivities(currentDate, function() {
+		    self.updateActivities(currentDate);
+		});
+	    };
 	}
     };
 
@@ -329,11 +393,19 @@
 		    $.mobile.changePage("#week",
 					{ reverse: true, transition: "pop", changeHash: false});
 		}
-		//ct.WeekView.populate();
+	    }
+
+	    if (page.match(/^month/)) {
+		if (activePage != "month") {
+		    $.mobile.changePage("#month",
+					{ reverse: true, transition: "slide", changeHash: false});
+		}
+		ct.MonthView.populate();
 	    }
 	});
 
 	ko.applyBindings(ct.DayView.Model, document.getElementById('day'));
+	ko.applyBindings(ct.MonthView.Model, document.getElementById('month'));
 	ko.applyBindings(ct.ActivityView.Model, document.getElementById('add'));
     });
 

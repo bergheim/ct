@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CT: What have you done?</title>
-    <link rel="stylesheet"  href="http://code.jquery.com/mobile/1.0b1/jquery.mobile-1.0b1.min.css" />
+    <link rel="stylesheet"  href="{{ url_for('static', filename='jquery.mobile-1.0b1.min.css') }}" />
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b1.css') }}">
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
   </head> 
@@ -43,23 +43,31 @@
     </div>
 
     <div data-role="page" id="week">
-      <div data-role="header">
-        <h1>Dialog</h1>
-      </div>
+      <div data-role="header" data-bind="template: { name: 'headerTemplate' }"></div>
       <div data-role="content">  
-        <h2>Popup</h2>
-        test
-        <p><a href="#dayView" class="back" data-role="button" data-inline="true" data-icon="back">Back</a></p> 
+        Week has no content yet.
       </div>
-      <div data-role="footer">
-        <h4>Page Footer</h4>
-      </div>
+      <div data-role="footer" class="footer" data-bind="template: { name: 'footerTemplate' }"></div>  
     </div>
 
-    <div data-role="page" id="monthView">
-      <div data-role="header" data-bind="template: { name: 'headerTemplate' }"></div>
+    <div data-role="page" id="month">
+      <div data-role="header" data-bind='template: { name: "headerTemplate" }'></div>
       <div data-role="content">
-        No content!!!
+	<table>
+	  <thead>
+            <tr>
+              <th>Uke</th>
+              <th>M</th>
+              <th>T</th>
+              <th>O</th>
+              <th>T</th>
+              <th>F</th>
+              <th>L</th>
+              <th>S</th>
+            </tr>
+	  </thead>
+	  <tbody data-bind='template: { name: "monthTemplate", foreach: activities() }'></tbody>
+	</table>
       </div>
       <div data-role="footer" class="footer" data-bind="template: { name: 'footerTemplate' }"></div>  
     </div>
@@ -166,6 +174,18 @@
 	    <button data-bind="click: function() { ct.DayView.addRecentActivity($data); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button>
 	  </div>
 	</td>
+      </tr>
+    </script>
+    <script type="text/html" id="monthTemplate">
+      <tr>
+        <td>foo</td>
+        <td>foo</td>
+        <td>foo</td>
+        <td>foo</td>
+        <td>foo</td>
+        <td>foo</td>
+        <td>foo</td>
+        <td>foo</td>
       </tr>
     </script>
     {% endraw %}

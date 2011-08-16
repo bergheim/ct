@@ -488,6 +488,7 @@
 		if (typeof week === "undefined") {
 		    week =  {};
 		    week["weekNumber"] = weekNumber; 
+		    week["hours"] = {};
 		    for (var i = 0; i <= 6 ; i++) {
 			week["day" + i] = "";
 		    }
@@ -500,9 +501,15 @@
 		    return memo + Number(activity.duration);
 		}, 0);
 
-		week[dayNumber] = sum;
-
+		week["hours"][dayNumber] = sum;
 	    }
+            for (week in weeks) {
+	        var sum = _.reduce(weeks[week]["hours"], function(memo, hours) {
+	            return memo + hours;
+	        }, 0);
+                weeks[week]["totalHours"] = sum;
+            }
+
 
 	    viewModel.weeks(_.values(weeks));
 	}

@@ -165,14 +165,14 @@
     </script>
     <script type="text/html" id="weekTemplate">
       <tr>
-        <td><div class="liner"><span data-bind="text: weekNumber"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day1"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day2"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day3"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day4"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day5"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day6"></span></div></td>
-        <td><div class="liner"><span data-bind="text: day0"></span></div></td>
+        <td><div class="liner"><span data-bind="text: weekNumber"></span> (<span data-bind="text: totalHours"></span>)</div></td>
+        <td><div class="liner"><span data-bind="text: hours.day1"></span></div></td>
+        <td><div class="liner"><span data-bind="text: hours.day2"></span></div></td>
+        <td><div class="liner"><span data-bind="text: hours.day3"></span></div></td>
+        <td><div class="liner"><span data-bind="text: hours.day4"></span></div></td>
+        <td><div class="liner"><span data-bind="text: hours.day5"></span></div></td>
+        <td><div class="liner"><span data-bind="text: hours.day6"></span></div></td>
+        <td><div class="liner"><span data-bind="text: hours.day0"></span></div></td>
       </tr>
     </script>
     {% endraw %}

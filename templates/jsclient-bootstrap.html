@@ -33,13 +33,12 @@
             <tr>
               <th class="col-name"><div class="liner">Navn</div></th>
               <th class="col-duration"><div class="liner">Timer</div></th>
-              <th class="col-comment"><div class="liner">Om</div></th>
               <th class="col-actions"><div class="liner">Valg</div></th>
             </tr>
 	  </thead>
 	  <tbody data-bind='template: { name: "activityTemplate", afterRender: postProcess, foreach: activities() }'></tbody>
 	</table>
-        <a href="#/add" data-role="button" data-icon="plus">Legg til</a>
+        <a href="#/edit" data-role="button" data-icon="plus">Legg til</a>
 	<button data-bind="click: ct.DayView.saveActivities">Lagre</button>
 
         <h2>Tilgjengelige aktiviteter</h2>
@@ -48,7 +47,6 @@
             <tr>
               <th class="col-name"><div class="liner">Navn</div></th>
               <th class="col-duration"><div class="liner">Timer</div></th>
-              <th class="col-comment"><div class="liner">Om</div></th>
               <th class="col-actions"><div class="liner">Valg</div></th>
             </tr>
 	  </thead>
@@ -60,13 +58,12 @@
       </div>  
     </div>
 
-    <div data-role="page" id="add">
+    <div data-role="page" id="edit">
       <div data-role="header" data-theme="e">
-	<h1>Aktivitet</h1>
+	<h1><span data-bind="text: title"></span></h1>
       </div>
 
       <div data-role="content" data-theme="d">	
-	<h2>Rediger</h2>
 	<form>
 	  <fieldset>
 	    <div>
@@ -101,17 +98,12 @@
       <tr>
         <td class="col-name">
 	  <div class="liner">
-	    <div data-bind="text: ct.getProjectShortName(id), attr: { title: ct.getProjectLongName(id) }"></div>
+	    <a href="#"  data-bind="text: ct.getProjectShortName(id), attr: { href: ct.DayView.getEditUrl(id) }"></a>
 	  </div>
 	</td>
 	<td class="col-duration">
 	  <div class="liner">
 	    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
-	  </div>
-	</td>
-	<td class="col-comment">
-	  <div class="liner">
-	    <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
 	  </div>
 	</td>
 	<td class="col-actions">
@@ -130,12 +122,7 @@
 	</td>
 	<td class="col-duration">
 	  <div class="liner">
-	    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
-	  </div>
-	</td>
-	<td class="col-comment">
-	  <div class="liner">
-	    <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
+	    <span class="duration" data-bind='text: duration' />
 	  </div>
 	</td>
 	<td class="col-actions">

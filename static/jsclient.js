@@ -3,6 +3,7 @@
 
     var createActivityViewModel = function() {
 	var viewModel = {
+	    title: ko.observable(""),
 	    date: ko.observable(""),
 	    projects: ko.observableArray([]),
 	    project_id: ko.observable(""),
@@ -19,6 +20,14 @@
 		window.history.back();
 	    },
 	};
+
+	viewModel.project_id.subscribe(function(newValue) {
+	    // jQuery Mobile adds some elements that need to be updated
+	    // Delay this so the other handlers can run first
+	    window.setTimeout(function() {
+		$('#edit div.ui-btn select[name=project]').selectmenu('refresh', true);
+	    }, 1);
+	});
 
 	return viewModel;
     };
@@ -148,10 +157,7 @@
 	    });
 	},
 	addActivity: function(day, activity) {
-	    var existing = _.detect(this._activitiesByDay[day], function(a) {
-		return (a.id == activity.id);
-	    });
-
+	    var existing = this.getActivity(day, activity.id);
 	    if (existing) {
 		this.removeActivity(day, existing);
 	    }
@@ -161,6 +167,11 @@
 	},
 	removeActivity: function(day, activity) {
 	    this._activitiesByDay[day] = _.without(this._activitiesByDay[day], activity);
+	},
+	getActivity: function(day, id) {
+	    return _.detect(this._activitiesByDay[day], function(a) {
+		return (a.id == id);
+	    });
 	},
 	getActivities: function(day) {
 	    return this._activitiesByDay[day];
@@ -198,9 +209,21 @@
     };
 
     CurrentTime.prototype.ActivityView = {
-	populate: function() {
-	    this.Model.date(currentDate());
+	populate: function(activity) {
 	    this.Model.projects(ct.getProjects());
+	    if (activity) {
+		this.Model.title("Rediger aktivitet");
+		this.Model.date(activity.day);
+		this.Model.project_id(activity.id);
+		this.Model.duration(activity.duration);
+		this.Model.comment(activity.comment);
+	    } else {
+		this.Model.title("Legg til aktivitet");
+		this.Model.date(currentDate());
+		this.Model.project_id(undefined);
+		this.Model.duration("");
+		this.Model.comment("");
+	    }
 	}
     }
 
@@ -289,7 +312,13 @@
 		    ct.DayView.updateActivities(date);
 		    ct.DayView.updateRecentActivities(date);
 		});
-	}
+	},
+	getEditUrl: function(id) {
+	    var date = this.Model.date();
+	    var activity = ct.getActivity(date, id);
+	    var index = this.Model.activities.indexOf(activity);
+	    return "/#/edit/" + index;
+	},
     };
 
     var ct = window.ct = new CurrentTime();
@@ -301,15 +330,28 @@
 
     $(document).bind("pagebeforecreate", function() {
 	$.address.change(function(event) {
-	    var page = event.value.substr(1) || "day";
+	    var parts = event.value.split("/");
+	    var page = parts[1] || "day";
+	    var args = _.rest(parts, 2);
 	    var activePage = $.mobile.activePage[0].id;
 
 	    if (page.match(/^add/)) {
-		if (activePage != "add") {
-		    $.mobile.changePage("#add",
+		if (activePage != "edit") {
+		    $.mobile.changePage("#edit",
 					{ role: "dialog", transition: "pop", changeHash: false});
 		}
 		ct.ActivityView.populate();
+	    }
+
+	    if (page.match(/^edit/)) {
+		if (activePage != "edit") {
+		    $.mobile.changePage("#edit",
+					{ role: "dialog", transition: "pop", changeHash: false});
+		}
+		var index = Number(args[0]);
+		var activities = ct.getActivities(ct.DayView.Model.date());
+		var activity = activities[index];
+		ct.ActivityView.populate(activity);
 	    }
 
 	    if (page.match(/^day/)) {
@@ -322,7 +364,7 @@
 	});
 
 	ko.applyBindings(ct.DayView.Model, document.getElementById('day'));
-	ko.applyBindings(ct.ActivityView.Model, document.getElementById('add'));
+	ko.applyBindings(ct.ActivityView.Model, document.getElementById('edit'));
     });
 
     // Fixes bug in jQuery Mobile. Without this, the ui-btn-active

@@ -1,4 +1,47 @@
 (function() {
+     /**
+     * Backported version of getWeek from date.js SVN since the Alpha-1 version is broken.
+     */
+    Date.prototype.getWeek = function () {
+        var a, b, c, d, e, f, g, n, s, w;
+        
+        var $y = this.getFullYear();
+        var $m = this.getMonth() + 1;
+        var $d = this.getDate();
+
+        if ($m <= 2) {
+            a = $y - 1;
+            b = (a / 4 | 0) - (a / 100 | 0) + (a / 400 | 0);
+            c = ((a - 1) / 4 | 0) - ((a - 1) / 100 | 0) + ((a - 1) / 400 | 0);
+            s = b - c;
+            e = 0;
+            f = $d - 1 + (31 * ($m - 1));
+        } else {
+            a = $y;
+            b = (a / 4 | 0) - (a / 100 | 0) + (a / 400 | 0);
+            c = ((a - 1) / 4 | 0) - ((a - 1) / 100 | 0) + ((a - 1) / 400 | 0);
+            s = b - c;
+            e = s + 1;
+            f = $d + ((153 * ($m - 3) + 2) / 5) + 58 + s;
+        }
+        
+        g = (a + b) % 7;
+        d = (f + g - e) % 7;
+        n = (f + 3 - d) | 0;
+
+        if (n < 0) {
+            w = 53 - ((g - s) / 5 | 0);
+        } else if (n > 364 + s) {
+            w = 1;
+        } else {
+            w = (n / 7 | 0) + 1;
+        }
+        
+        $y = $m = $d = null;
+        
+        return w;
+    };
+
     var dayViewUrl = "#/day";
     var monthViewUrl = "#/month";
     var createActivityViewModel = function() {
@@ -50,10 +93,10 @@
 	};
 
 	viewModel.next = ko.dependentObservable(function() {
-	    return getNextDayUrl(this.date());
+	    return getNextDayUrl(this.date() || currentDayString());
 	}, viewModel);
 	viewModel.prev = ko.dependentObservable(function() {
-	    return getPreviousDayUrl(this.date());
+	    return getPreviousDayUrl(this.date() || currentDayString());
 	}, viewModel);
 
 	return viewModel;
@@ -64,7 +107,7 @@
 	    home: monthViewUrl,
 	    date: ko.observable(""),
 	    title: ko.observable(""),
-	    activities: ko.observableArray([]),
+	    weeks: ko.observableArray([]),
 	    reload: function() {
 		ct.clear();
 		ct.MonthView.populate();
@@ -72,84 +115,121 @@
 	};
 
 	viewModel.next = ko.dependentObservable(function() {
-	    return getNextMonthUrl(this.date());
+	    return getNextMonthUrl(this.date() || currentMonthString());
 	}, viewModel);
 	viewModel.prev = ko.dependentObservable(function() {
-	    return getPreviousMonthUrl(this.date());
+	    return getPreviousMonthUrl(this.date() || currentMonthString());
 	}, viewModel);
 
 	return viewModel;
     }
 
-    var getDateFromString = function(s) {
-	return Date.parseExact(s, "yyyy-MM-dd") || Date.today();
+    var isValidDayString = function(s) {
+	var date = getDateFromDayString(s);
+	return date != null;
     };
 
-    var getTitleFromString = function(s) {
-	var d = getDateFromString(s);
-	return d.toString("dddd d. MMMM yyyy").toLowerCase();
+    var isValidMonthString = function(s) {
+	var date = getDateFromMonthString(s);
+	return date != null;
     };
 
-    var nextDayFromString = function(s) {
-	var d = getDateFromString(s).add(1).day();
-	return getStringFromDate(d);
+    var getDateFromDayString = function(s) {
+	return Date.parseExact(s, "yyyy-MM-dd");
     };
 
-    var previousDayFromString = function(s) {
-	var d = getDateFromString(s).add(-1).day();
-	return getStringFromDate(d);
+    var getDateFromMonthString = function(s) {
+	return Date.parseExact(s, "yyyy-MM");
     };
 
-    var getStringFromDate = function(d) {
-	var date = d || Date.today();
+    var getDayStringFromDate = function(d) {
 	return d.toString("yyyy-MM-dd");
     };
 
-    var getSelectedDate = function() {
+    var getMonthStringFromDate = function(d) {
+	return d.toString("yyyy-MM");
+    };
+
+    var getTitleFromDayString = function(s) {
+	var d = getDateFromDayString(s);
+	return d.toString("dddd d. MMMM yyyy").toLowerCase();
+    };
+
+    var getTitleFromMonthString = function(s) {
+	var d = getDateFromMonthString(s);
+	return d.toString("MMMM yyyy").toLowerCase();
+    };
+
+    var nextDayFromDayString = function(s) {
+	var d = getDateFromDayString(s).add(1).day();
+	return getDayStringFromDate(d);
+    };
+
+    var previousDayFromDayString = function(s) {
+	var d = getDateFromDayString(s).add(-1).day();
+	return getDayStringFromDate(d);
+    };
+
+    var nextMonthFromMonthString = function(s) {
+	var d = getDateFromMonthString(s).add(1).month();
+	return getMonthStringFromDate(d);
+    };
+
+    var previousMonthFromMonthString = function(s) {
+	var d = getDateFromMonthString(s).add(-1).month();
+	return getMonthStringFromDate(d);
+    };
+
+    var getArgumentsFromUrl = function() {
 	var url = $.address.value();
 	var parts = url.split("/");
-	var s = parts[2];
-	// Make sure we have a valid date
-	var d = getDateFromString(s);
-	return  getStringFromDate(d);
+	return parts[2];
     };
 
     var getDayViewUrl = function(s) {
 	return dayViewUrl + "/" + s;
     };
 
+    var getMonthViewUrl = function(s) {
+	return monthViewUrl + "/" + s;
+    };
+
     var getNextDayUrl = function(s) {
-	var day = nextDayFromString(s);
-	return getDayViewUrl(day);
+	var dayString = nextDayFromDayString(s);
+	return getDayViewUrl(dayString);
     };
 
     var getPreviousDayUrl = function(s) {
-	var day = previousDayFromString(s);
-	return getDayViewUrl(day);
+	var dayString = previousDayFromDayString(s);
+	return getDayViewUrl(dayString);
     };
 
     var getNextMonthUrl = function(s) {
-	var day = nextDayFromString(s);
-	return getDayViewUrl(day);
+	var monthString = nextMonthFromMonthString(s);
+	return getMonthViewUrl(monthString);
     };
 
     var getPreviousMonthUrl = function(s) {
-	var day = previousDayFromString(s);
-	return getDayViewUrl(day);
+	var monthString = previousMonthFromMonthString(s);
+	return getMonthViewUrl(monthString);
     };
 
-    var getActivitiesUrl = function(s) { 
-	var d = getDateFromString(s);
+    var getActivitiesUrlFromDayString = function(s) { 
+	var d = getDateFromDayString(s);
 	return "/api/activities/" + d.toString("yyyy/MM");
     };
 
     var setActivityUrl = function(s) { 
-	var d = getDateFromString(s);
+	var d = getDateFromDayString(s);
 	return "/api/activities/" + d.toString("yyyy/MM/dd");
     };
 
-    var currentDate = function() {
-	return getStringFromDate(Date.today());
+    var currentDayString = function() {
+	return getDayStringFromDate(Date.today());
+    };
+
+    var currentMonthString = function() {
+	return getMonthStringFromDate(Date.today());
     };
 
     var CurrentTime = function() {
@@ -212,11 +292,11 @@
 	hasData: function(day) {
 	    return this._activitiesByDay.hasOwnProperty(day);
 	},
-	fetchActivities: function(day, callback) {
+	fetchActivities: function(dayString, callback) {
 	    var self = this;
 	    if (!self._isFetchingActivities) {
 		self._isFetchingActivities = true;
-		self._promise = $.getJSON(getActivitiesUrl(day), function(data) {
+		self._promise = $.getJSON(getActivitiesUrlFromDayString(dayString), function(data) {
 		    self.extendActivitiesByDay(data.activities);
 		    self._isFetchingActivities = false;
 		});
@@ -252,7 +332,7 @@
 		this.Model.comment(activity.comment);
 	    } else {
 		this.Model.title("Legg til aktivitet");
-		this.Model.date(currentDate());
+		this.Model.date(currentDayString());
 		this.Model.project_id(undefined);
 		this.Model.duration("");
 		this.Model.comment("");
@@ -261,54 +341,61 @@
     }
 
     CurrentTime.prototype.DayView = {
+	getSelectedDateString: function() {
+	   var dayString = getArgumentsFromUrl();
+	   if (!isValidDayString(dayString)) {
+	       return currentDayString();
+	   }
+	   return dayString;
+        },
 	populate: function() {
-	    var date = getSelectedDate();
-	    var title = getTitleFromString(date);
-	    this.Model.date(date);
+	    var dayString = this.getSelectedDateString();
+	    var title = getTitleFromDayString(dayString);
+	    this.Model.date(dayString);
 	    this.Model.title(title);
-	    this.updateActivities(date);
-	    this.updateRecentActivities(date);
+	    this.updateActivities(dayString);
+	    this.updateRecentActivities(dayString);
 	},
-	updateActivities: function(currentDate) {
+	updateActivities: function(dayString) {
 	    var viewModel = this.Model;
-	    if (viewModel.date() != currentDate) {
+	    if (viewModel.date() != dayString) {
 		return;
 	    }
 
 	    viewModel.activities.removeAll();
 
-	    if (ct.hasData(currentDate)) {
-		var data = ct.getActivities(currentDate);
+	    if (ct.hasData(dayString)) {
+		var data = ct.getActivities(dayString);
 		viewModel.activities(data);
 		$.mobile.pageLoading(true);
 	    } else {
 		var self = this;
 		$.mobile.pageLoading();
-		ct.fetchActivities(currentDate, function() {
-		    self.updateActivities(currentDate);
+		ct.fetchActivities(dayString, function() {
+		    self.updateActivities(dayString);
 		});
 	    };
 	},
-	updateRecentActivities: function(currentDate) {
+	updateRecentActivities: function(dayString) {
 	    var viewModel = this.Model;
-	    if (viewModel.date() != currentDate) {
+	    if (viewModel.date() != dayString) {
 		return;
 	    }
 
 	    viewModel.recentActivities.removeAll();
 
-	    var day = previousDayFromString(currentDate);
+	    var day = previousDayFromDayString(dayString);
 	    var activities = [];
 	    var excluded_ids = _.pluck(viewModel.activities(), 'id');
 
-            var earliestDateLimit = getDateFromString(currentDate).add(-30).day();
-            var dayDate = getDateFromString(day).day();
+            var earliestDateLimit = getDateFromDayString(dayString).add(-30).day();
+            var dayDate = getDateFromDayString(day).day();
 	    
 	    while (viewModel.recentActivities().length < 5 && dayDate > earliestDateLimit) {
 		if (!ct.hasData(day)) {
 		    var self = this;
 		    ct.fetchActivities(day, function() {
-			self.updateRecentActivities(currentDate);
+			self.updateRecentActivities(dayString);
 		    });
 		    return;
 		}
@@ -321,8 +408,8 @@
 		activities = activities.concat(include);
 		excluded_ids = excluded_ids.concat(_.pluck(include, 'id'));
 		viewModel.recentActivities(activities);
-		day = previousDayFromString(day);
-                dayDate = getDateFromString(day).day();
+		day = previousDayFromDayString(day);
+                dayDate = getDateFromDayString(day).day();
 	    }
 	},
 	addRecentActivity: function(recentActivity) {
@@ -359,32 +446,65 @@
     };
 
     CurrentTime.prototype.MonthView = {
+	getSelectedDateString: function() {
+	   var monthString = getArgumentsFromUrl();
+	   if (!isValidMonthString(monthString)) {
+	       return currentMonthString();
+	   }
+	   return monthString;
+        },
 	populate: function() {
-	    var date = getSelectedDate();
-	    var title = getTitleFromString(date);
-	    this.Model.date(date);
+	    var monthString = this.getSelectedDateString();
+	    var title = getTitleFromMonthString(monthString);
+	    this.Model.date(monthString);
 	    this.Model.title(title);
-	    this.updateActivities(date);
+	    this.updateWeeks(monthString);
 	},
-	updateActivities: function(currentDate) {
+	updateWeeks: function(monthString) {
 	    var viewModel = this.Model;
-	    if (viewModel.date() != currentDate) {
+	    if (viewModel.date() != monthString) {
 		return;
 	    }
 
-	    viewModel.activities.removeAll();
+	    viewModel.weeks.removeAll();
 
-	    if (ct.hasData(currentDate)) {
-		var data = ct.getActivities(currentDate);
-		viewModel.activities(data);
+	    var d = getDateFromMonthString(monthString);
+	    var weeks = {};
+	    for (var month = d.getMonth(); d.getMonth() == month; d.add(1).day()) {
+		var dayString = getDayStringFromDate(d);
+		if (!ct.hasData(dayString)) {
+		    var self = this;
+		    $.mobile.pageLoading();
+		    ct.fetchActivities(dayString, function() {
+			self.updateWeeks(monthString);
+		    });
+		    return;
+		}
 		$.mobile.pageLoading(true);
-	    } else {
-		var self = this;
-		$.mobile.pageLoading();
-		ct.fetchActivities(currentDate, function() {
-		    self.updateActivities(currentDate);
-		});
-	    };
+
+		var weekNumber = d.getWeek(0);
+		var dayNumber = "day" + d.getDay();
+		var week = weeks[weekNumber];
+		if (typeof week === "undefined") {
+		    week =  {};
+		    week["weekNumber"] = weekNumber; 
+		    for (var i = 0; i <= 6 ; i++) {
+			week["day" + i] = "";
+		    }
+
+		    weeks[weekNumber] = week;
+		}
+
+		var activities = ct.getActivities(dayString);
+		var sum = _.reduce(activities, function(memo, activity) { 
+		    return memo + Number(activity.duration);
+		}, 0);
+
+		week[dayNumber] = sum;
+
+	    }
+
+	    viewModel.weeks(_.values(weeks));
 	}
     };
 

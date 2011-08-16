@@ -64,7 +64,7 @@
               <th>S</th>
             </tr>
 	  </thead>
-	  <tbody data-bind='template: { name: "monthTemplate", foreach: activities() }'></tbody>
+	  <tbody data-bind='template: { name: "weekTemplate", foreach: weeks() }'></tbody>
 	</table>
       </div>
       <div data-role="footer" class="footer" data-bind="template: { name: 'footerTemplate' }"></div>  
@@ -163,16 +163,16 @@
     </td>
     </tr>
     </script>
-    <script type="text/html" id="monthTemplate">
-    <tr>
-    <td>foo</td>
-    <td>foo</td>
-    <td>foo</td>
-    <td>foo</td>
-    <td>foo</td>
-    <td>foo</td>
-    <td>foo</td>
-        <td>foo</td>
+    <script type="text/html" id="weekTemplate">
+      <tr>
+        <td><div class="liner"><span data-bind="text: weekNumber"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day1"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day2"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day3"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day4"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day5"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day6"></span></div></td>
+        <td><div class="liner"><span data-bind="text: day0"></span></div></td>
       </tr>
     </script>
     {% endraw %}
@@ -187,4 +187,5 @@
     <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
   </body>
 </html>
-
+<!-- vim: et sts=2 sw=2
+ -->

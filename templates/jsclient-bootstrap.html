@@ -18,7 +18,6 @@
             <tr>
               <th class="col-name"><div class="liner">Navn</div></th>
               <th class="col-duration"><div class="liner">Timer</div></th>
-              <th class="col-comment"><div class="liner">Om</div></th>
               <th class="col-actions"><div class="liner">Valg</div></th>
             </tr>
 	  </thead>
@@ -29,12 +28,11 @@
         <h2>Tilgjengelige aktiviteter</h2>
         <table class="activities">
           <thead>
-                  <tr>
-                    <th class="col-name"><div class="liner">Navn</div></th>
-                    <th class="col-duration"><div class="liner">Timer</div></th>
-                    <th class="col-comment"><div class="liner">Om</div></th>
-                    <th class="col-actions"><div class="liner">Valg</div></th>
-                  </tr>
+            <tr>
+              <th class="col-name"><div class="liner">Navn</div></th>
+              <th class="col-duration"><div class="liner">Timer</div></th>
+              <th class="col-actions"><div class="liner">Valg</div></th>
+            </tr>
           </thead>
           <tbody data-bind='template: { name: "availableActivitiesTemplate", afterRender: postProcess, foreach: recentActivities() }'> </tbody>
 	</table>
@@ -72,13 +70,12 @@
       <div data-role="footer" class="footer" data-bind="template: { name: 'footerTemplate' }"></div>  
     </div>
 
-    <div data-role="page" id="add">
+    <div data-role="page" id="edit">
       <div data-role="header" data-theme="e">
-	<h1>Aktivitet</h1>
+	<h1><span data-bind="text: title"></span></h1>
       </div>
 
       <div data-role="content" data-theme="d">	
-	<h2>Rediger</h2>
 	<form>
 	  <fieldset>
 	    <div>
@@ -126,65 +123,55 @@
       </div> 
     </script>
     <script type="text/html" id="footerTemplate">
-        <p>&copy; 2011 The CurrentTime Replacement Project</p>
+    <p>&copy; 2011 The CurrentTime Replacement Project</p>
     </script>
     <script type="text/html" id="activityTemplate">
-      <tr>
-        <td class="col-name">
-	  <div class="liner">
-	    <div data-bind="text: ct.getProjectShortName(id), attr: { title: ct.getProjectLongName(id) }"></div>
-	  </div>
-	</td>
-	<td class="col-duration">
-	  <div class="liner">
-	    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
-	  </div>
-	</td>
-	<td class="col-comment">
-	  <div class="liner">
-	    <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
-	  </div>
-	</td>
-	<td class="col-actions">
-	  <div class="liner">
-	    <button data-bind="click: function() { ct.DayView.removeActivity($data); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button>
-	  </div>
-	</td>
-      </tr>
+    <tr>
+    <td class="col-name">
+    <div class="liner">
+    <a href="#"  data-bind="text: ct.getProjectShortName(id), attr: { href: ct.DayView.getEditUrl(id) }"></a>
+    </div>
+    </td>
+    <td class="col-duration">
+    <div class="liner">
+    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
+    </div>
+    </td>
+    <td class="col-actions">
+    <div class="liner">
+    <button data-bind="click: function() { ct.DayView.removeActivity($data); }" data-role="button" data-icon="minus" data-iconpos="notext">Slett</button>
+    </div>
+    </td>
+    </tr>
     </script>
     <script type="text/html" id="availableActivitiesTemplate">
-      <tr>
-        <td class="col-name">
-	  <div class="liner">
-	    <div data-bind="text: ct.getProjectShortName(id), attr: { title: ct.getProjectLongName(id) }"></div>
-	  </div>
-	</td>
-	<td class="col-duration">
-	  <div class="liner">
-	    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
-	  </div>
-	</td>
-	<td class="col-comment">
-	  <div class="liner">
-	    <textarea data-bind='value: comment, valueUpdate: "afterkeydown"'></textarea>
-	  </div>
-	</td>
-	<td class="col-actions">
-	  <div class="liner">
-	    <button data-bind="click: function() { ct.DayView.addRecentActivity($data); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button>
-	  </div>
-	</td>
-      </tr>
+    <tr>
+    <td class="col-name">
+    <div class="liner">
+    <div data-bind="text: ct.getProjectShortName(id), attr: { title: ct.getProjectLongName(id) }"></div>
+    </div>
+    </td>
+    <td class="col-duration">
+    <div class="liner">
+    <span class="duration" data-bind='text: duration' />
+    </div>
+    </td>
+    <td class="col-actions">
+    <div class="liner">
+    <button data-bind="click: function() { ct.DayView.addRecentActivity($data); }" data-role="button" data-icon="plus" data-iconpos="notext">Legg til</button>
+    </div>
+    </td>
+    </tr>
     </script>
     <script type="text/html" id="monthTemplate">
-      <tr>
-        <td>foo</td>
-        <td>foo</td>
-        <td>foo</td>
-        <td>foo</td>
-        <td>foo</td>
-        <td>foo</td>
-        <td>foo</td>
+    <tr>
+    <td>foo</td>
+    <td>foo</td>
+    <td>foo</td>
+    <td>foo</td>
+    <td>foo</td>
+    <td>foo</td>
+    <td>foo</td>
         <td>foo</td>
       </tr>
     </script>

@@ -17,12 +17,9 @@ table.activities textarea {
 }
 
 table.activities .col-name div.liner {
-    width: 120px;
+    width: 180px;
 }
 table.activities .col-duration div.liner {
-    width: 60px;
-}
-table.activities .col-comment div.liner {
     width: 60px;
 }
 table.activities .col-actions div.liner {

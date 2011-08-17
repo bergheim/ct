@@ -232,6 +232,11 @@
 	return getMonthStringFromDate(Date.today());
     };
 
+    var setActive = function(id) {
+	$('.ui-btn-active').removeClass('ui-btn-active');
+	$(id).addClass('ui-btn-active');
+    };
+
     var CurrentTime = function() {
 	this._isFetchingActivities = false;
 	this._projects = [];
@@ -554,6 +559,7 @@
 		if (activePage != "day") {
 		    $.mobile.changePage("#day",
 					{ reverse: true, transition: "pop", changeHash: false});
+		    setActive('.dayButton');
 		}
 		ct.DayView.populate();
 	    }
@@ -562,6 +568,7 @@
 		if (activePage != "week") {
 		    $.mobile.changePage("#week",
 					{ reverse: true, transition: "pop", changeHash: false});
+		    setActive('.weekButton');
 		}
 	    }
 
@@ -569,6 +576,7 @@
 		if (activePage != "month") {
 		    $.mobile.changePage("#month",
 					{ reverse: true, transition: "slide", changeHash: false});
+		    setActive('.monthButton');
 		}
 		ct.MonthView.populate();
 	    }

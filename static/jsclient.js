@@ -531,6 +531,28 @@
     });
 
     $(document).bind("pagebeforecreate", function() {
+        $("[data-role=content]")
+          .live("swipeleft", function(event) {
+            if (event.isDefaultPrevented()) {
+              return;
+            }
+
+            var url = $("a.next", $.mobile.activePage).attr("href");
+            $.address.value(url.replace(/^#/, ""));
+            event.preventDefault();
+        });
+
+        $("[data-role=content]")
+          .live("swiperight", function(event) {
+            if (event.isDefaultPrevented()) {
+              return;
+            }
+
+            var url = $("a.prev", $.mobile.activePage).attr("href");
+            $.address.value(url.replace(/^#/, ""));
+            event.preventDefault();
+        });
+
 	$.address.change(function(event) {
 	    var parts = event.value.split("/");
 	    var page = parts[1] || "day";

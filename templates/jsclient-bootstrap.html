@@ -100,17 +100,18 @@
 	</div> 
       </div>
       <div data-role="content">
-	<table>
+	<table class="calendar">
 	  <thead>
             <tr>
-              <th>Uke</th>
-              <th>M</th>
-              <th>T</th>
-              <th>O</th>
-              <th>T</th>
-              <th>F</th>
-              <th>L</th>
-              <th>S</th>
+              <th><div class="liner">Uke</div></th>
+              <th><div class="liner">M</div></th>
+              <th><div class="liner">T</div></th>
+              <th><div class="liner">O</div></th>
+              <th><div class="liner">T</div></th>
+              <th><div class="liner">F</div></th>
+              <th><div class="liner">L</div></th>
+              <th><div class="liner">S</div></th>
+              <th><div class="liner">Sum</div></th>
             </tr>
 	  </thead>
 	  <tbody data-bind='template: { name: "weekTemplate", foreach: weeks() }'></tbody>
@@ -197,20 +198,30 @@
     </script>
     <script type="text/html" id="weekTemplate">
       <tr>
-        <td><div class="liner"><span data-bind="text: weekNumber"></span> (<span data-bind="text: totalHours"></span>)</div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day1.url }" data-role="button"><span data-bind="text: days.day1.hours"></span></a></div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day2.url }" data-role="button"><span data-bind="text: days.day2.hours"></span></div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day3.url }" data-role="button"><span data-bind="text: days.day3.hours"></span></a></div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day4.url }" data-role="button"><span data-bind="text: days.day4.hours"></span></a></div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day5.url }" data-role="button"><span data-bind="text: days.day5.hours"></span></a</div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day6.url }" data-role="button"><span data-bind="text: days.day6.hours"></span></a</div></td>
-        <td><div class="liner"><a data-bind="attr: { href: days.day0.url }" data-role="button"><span data-bind="text: days.day0.hours"></span></a</div></td>
+        <td>
+          <div class="liner">
+            <span data-bind="text: weekNumber"></span>
+          </div>
+        </td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[1] }'></td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[2] }'></td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[3] }'></td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[4] }'></td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[5] }'></td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[6] }'></td>
+        <td data-bind='template: { name: "weekDayTemplate", data: days[0] }'></td>
+        <td>
+          <div class="liner">
+            <span data-bind="text: totalHours"></span>
+          </div>
+        </td>
       </tr>
     </script>
-    <!--script type="text/html" id="weekDayTemplate">
-        <td data-bind='template: { name: "weekDayTemplate", foreach: days }'></td>
-        <td><div class="liner"><a data-bind="attr: { href: day1.url }"><span data-bind="text: day1.hours"></span></a></div></td>
-    </script-->
+    <script type="text/html" id="weekDayTemplate">
+      <div class="liner">
+        <a data-bind="attr: { href: url }"><span data-bind="text: hours"></span></a>
+      </div>
+    </script>
     {% endraw %}
 
     <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>

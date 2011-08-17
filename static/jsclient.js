@@ -487,16 +487,17 @@
 		}
 		$.mobile.pageLoading(true);
 
-		var weekNumber = d.getWeek(0);
-		var dayNumber = "day" + d.getDay();
+		var weekNumber = d.getWeek();
+		var dayNumber = d.getDay();
 		var week = weeks[weekNumber];
 		if (typeof week === "undefined") {
 		    week =  {};
 		    week["weekNumber"] = weekNumber; 
-		    week["days"] = {};
+		    week["days"] = [];
 		    for (var i = 0; i <= 6 ; i++) {
-			week["days"]["day" + i] = {};
-			week["days"]["day" + i]["hours"] = "";
+			week["days"][i] = {};
+			week["days"][i]["hours"] = "";
+			week["days"][i]["url"] = "#";
 		    }
 
 		    weeks[weekNumber] = week;

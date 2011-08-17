@@ -25,3 +25,16 @@ table.activities .col-duration div.liner {
 table.activities .col-actions div.liner {
     width: 26px;
 }
+
+table.calendar {
+    position: relative;
+    left: -10px;
+    border-spacing: 0px;
+}
+
+table.calendar div.liner {
+    width: 2em;
+    height: 2em;
+    text-align: right;
+    background-color: white;
+}

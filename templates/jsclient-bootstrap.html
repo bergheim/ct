@@ -166,15 +166,19 @@
     <script type="text/html" id="weekTemplate">
       <tr>
         <td><div class="liner"><span data-bind="text: weekNumber"></span> (<span data-bind="text: totalHours"></span>)</div></td>
-        <td><div class="liner"><span data-bind="text: hours.day1"></span></div></td>
-        <td><div class="liner"><span data-bind="text: hours.day2"></span></div></td>
-        <td><div class="liner"><span data-bind="text: hours.day3"></span></div></td>
-        <td><div class="liner"><span data-bind="text: hours.day4"></span></div></td>
-        <td><div class="liner"><span data-bind="text: hours.day5"></span></div></td>
-        <td><div class="liner"><span data-bind="text: hours.day6"></span></div></td>
-        <td><div class="liner"><span data-bind="text: hours.day0"></span></div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day1.url }"><span data-bind="text: days.day1.hours"></span></a></div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day2.url }"><span data-bind="text: days.day2.hours"></span></div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day3.url }"><span data-bind="text: days.day3.hours"></span></a></div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day4.url }"><span data-bind="text: days.day4.hours"></span></a></div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day5.url }"><span data-bind="text: days.day5.hours"></span></a</div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day6.url }"><span data-bind="text: days.day6.hours"></span></a</div></td>
+        <td><div class="liner"><a data-bind="attr: { href: days.day0.url }"><span data-bind="text: days.day0.hours"></span></a</div></td>
       </tr>
     </script>
+    <!--script type="text/html" id="weekDayTemplate">
+        <td data-bind='template: { name: "weekDayTemplate", foreach: days }'></td>
+        <td><div class="liner"><a data-bind="attr: { href: day1.url }"><span data-bind="text: day1.hours"></span></a></div></td>
+    </script-->
     {% endraw %}
 
     <script src="{{ url_for('static', filename='jquery-1.6.1.min.js') }}"></script>

@@ -488,24 +488,26 @@
 		if (typeof week === "undefined") {
 		    week =  {};
 		    week["weekNumber"] = weekNumber; 
-		    week["hours"] = {};
+		    week["days"] = {};
 		    for (var i = 0; i <= 6 ; i++) {
-			week["day" + i] = "";
+			week["days"]["day" + i] = {};
+			week["days"]["day" + i]["hours"] = "";
 		    }
 
 		    weeks[weekNumber] = week;
 		}
+                week["days"][dayNumber]["url"] = dayViewUrl + "/" + dayString;
 
 		var activities = ct.getActivities(dayString);
 		var sum = _.reduce(activities, function(memo, activity) { 
 		    return memo + Number(activity.duration);
 		}, 0);
 
-		week["hours"][dayNumber] = sum;
+                week["days"][dayNumber]["hours"] = sum;
 	    }
             for (week in weeks) {
-	        var sum = _.reduce(weeks[week]["hours"], function(memo, hours) {
-	            return memo + hours;
+	        var sum = _.reduce(weeks[week]["days"], function(memo, day) {
+	            return memo + Number(day.hours);
 	        }, 0);
                 weeks[week]["totalHours"] = sum;
             }

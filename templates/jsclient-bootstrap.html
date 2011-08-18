@@ -79,13 +79,13 @@
           <thead>
               <tr>
                 <th><div class="liner">Aktivitet</div></th>
-                <th><div class="liner">M</div></th>
-                <th><div class="liner">T</div></th>
-                <th><div class="liner">O</div></th>
-                <th><div class="liner">T</div></th>
-                <th><div class="liner">F</div></th>
-                <th><div class="liner">L</div></th>
-                <th><div class="liner">S</div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[0] }">M</a></div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[1] }">T</a></div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[2] }">O</a></div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[3] }">T</a></div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[4] }">F</a></div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[5] }">L</a></div></th>
+                <th><div class="liner"><a data-bind="attr: { href: dayLinks()[6] }">S</a></div></th>
               </tr>
           </thead>
           <tbody data-bind='template: { name: "weekViewTemplate", foreach: days() }'></tbody>

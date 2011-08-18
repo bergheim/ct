@@ -109,6 +109,7 @@
 	    date: ko.observable(""),
 	    title: ko.observable(""),
 	    days: ko.observableArray([]),
+	    dayLinks: ko.observableArray([]),
 	    reload: function() {
 		ct.clear();
 		ct.WeekView.populate();
@@ -556,11 +557,14 @@
 
 
 	    viewModel.days.removeAll();
+	    viewModel.dayLinks.removeAll();
 
             var days = {}
+            var dayLinks = []
 	    var d = getDateFromWeekString(weekString);
             for (var weekDay = 0; weekDay < 7; weekDay++) {
 		var dayString = getDayStringFromDate(d);
+                dayLinks.push(dayViewUrl + "/" + dayString);
 		if (!ct.hasData(dayString)) {
 		    var self = this;
 		    $.mobile.pageLoading();
@@ -593,6 +597,7 @@
                 d.add(1).day();
             }
 	    viewModel.days(_.values(days));
+	    viewModel.dayLinks(dayLinks);
 	}
     };
 

@@ -732,16 +732,17 @@
 	    if (page.match(/^day/)) {
 		if (activePage != "day") {
 		    $.mobile.changePage("#day",
-					{ reverse: true, transition: "pop", changeHash: false});
+					{ reverse: true, transition: "slide", changeHash: false});
 		    setActive('.dayButton');
 		}
 		ct.DayView.populate();
 	    }
 
 	    if (page.match(/^week/)) {
+                var reverse = (activePage == "day") ? false : true;
 		if (activePage != "week") {
 		    $.mobile.changePage("#week",
-					{ reverse: true, transition: "pop", changeHash: false});
+					{ reverse: reverse, transition: "slide", changeHash: false});
 		    setActive('.weekButton');
 		}
 		ct.WeekView.populate();
@@ -750,7 +751,7 @@
 	    if (page.match(/^month/)) {
 		if (activePage != "month") {
 		    $.mobile.changePage("#month",
-					{ reverse: true, transition: "slide", changeHash: false});
+					{ reverse: false, transition: "slide", changeHash: false});
 		    setActive('.monthButton');
 		}
 		ct.MonthView.populate();

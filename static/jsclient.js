@@ -108,7 +108,7 @@
 	    home: weekViewUrl,
 	    date: ko.observable(""),
 	    title: ko.observable(""),
-	    days: ko.observableArray([]),
+	    weekActivities: ko.observableArray([]),
 	    dayLinks: ko.observableArray([]),
 	    reload: function() {
 		ct.clear();
@@ -556,10 +556,10 @@
 	    }
 
 
-	    viewModel.days.removeAll();
+	    viewModel.weekActivities.removeAll();
 	    viewModel.dayLinks.removeAll();
 
-            var days = {}
+            var weekActivities = {}
             var dayLinks = []
 	    var d = getDateFromWeekString(weekString);
             for (var weekDay = 0; weekDay < 7; weekDay++) {
@@ -579,24 +579,23 @@
 
                 for (var i = 0; i < activities.length; i++) {
                     var activity = activities[i];
-                    //var name = [ct.getProjectShortName(activity.id)];
-                    var name = activity.id;
+                    var activityId = activity.id;
                     var d = getDateFromDayString(activity.day);
 
-                    if (typeof days[name] === "undefined") {
-                        days[name] = {};
-                        days[name]["id"] = activity.id;
-                        days[name]["days"] = {};
+                    if (typeof weekActivities[activityId] === "undefined") {
+                        weekActivities[activityId] = {};
+                        weekActivities[activityId]["id"] = activity.id;
+                        weekActivities[activityId]["days"] = {};
                         for( var day = 0; day < 7; day++ ) {
-                            days[name]["days"][day] = "";
+                            weekActivities[activityId]["days"][day] = "";
                         }
 
                     }
-                    days[name]["days"][d.getDay()] = activity.duration;
+                    weekActivities[activityId]["days"][d.getDay()] = activity.duration;
                 }
                 d.add(1).day();
             }
-	    viewModel.days(_.values(days));
+	    viewModel.weekActivities(_.values(weekActivities));
 	    viewModel.dayLinks(dayLinks);
 	}
     };

@@ -1,5 +1,5 @@
 (function() {
-     /**
+    /**
      * Backported version of getWeek from date.js SVN since the Alpha-1 version is broken.
      */
     Date.prototype.getWeek = function () {
@@ -440,11 +440,12 @@
 
     CurrentTime.prototype.DayView = {
 	getSelectedDateString: function() {
-	   var dayString = getArgumentsFromUrl();
-	   if (!isValidDayString(dayString)) {
-	       return currentDayString();
-	   }
-	   return dayString;
+	    var args = getArgumentsFromUrl();
+	    var dayString = args[0];
+	    if (!isValidDayString(dayString)) {
+		return currentDayString();
+	    }
+	    return dayString;
         },
 	populate: function() {
 	    var dayString = this.getSelectedDateString();
@@ -545,11 +546,12 @@
 
     CurrentTime.prototype.WeekView = {
 	getSelectedDateString: function() {
-	   var weekString = getArgumentsFromUrl();
-	   if (!isValidWeekString(weekString)) {
-	       return currentWeekString();
-	   }
-	   return weekString;
+	    var args = getArgumentsFromUrl();
+	    var weekString = args[0];
+	    if (!isValidWeekString(weekString)) {
+		return currentWeekString();
+	    }
+	    return weekString;
         },
 	populate: function() {
 	    var weekString = this.getSelectedDateString();
@@ -612,11 +614,12 @@
 
     CurrentTime.prototype.MonthView = {
 	getSelectedDateString: function() {
-	   var monthString = getArgumentsFromUrl();
-	   if (!isValidMonthString(monthString)) {
-	       return currentMonthString();
-	   }
-	   return monthString;
+	    var args = getArgumentsFromUrl();
+	    var monthString = args[0];
+	    if (!isValidMonthString(monthString)) {
+		return currentMonthString();
+	    }
+	    return monthString;
         },
 	populate: function() {
 	    var monthString = this.getSelectedDateString();
@@ -692,26 +695,26 @@
 
     $(document).bind("pagebeforecreate", function() {
         $("[data-role=content]")
-          .live("swipeleft", function(event) {
-            if (event.isDefaultPrevented()) {
-              return;
-            }
+            .live("swipeleft", function(event) {
+		if (event.isDefaultPrevented()) {
+		    return;
+		}
 
-            var url = $("a.next", $.mobile.activePage).attr("href");
-            $.address.value(url.replace(/^#/, ""));
-            event.preventDefault();
-        });
+		var url = $("a.next", $.mobile.activePage).attr("href");
+		$.address.value(url.replace(/^#/, ""));
+		event.preventDefault();
+            });
 
         $("[data-role=content]")
-          .live("swiperight", function(event) {
-            if (event.isDefaultPrevented()) {
-              return;
-            }
+            .live("swiperight", function(event) {
+		if (event.isDefaultPrevented()) {
+		    return;
+		}
 
-            var url = $("a.prev", $.mobile.activePage).attr("href");
-            $.address.value(url.replace(/^#/, ""));
-            event.preventDefault();
-        });
+		var url = $("a.prev", $.mobile.activePage).attr("href");
+		$.address.value(url.replace(/^#/, ""));
+		event.preventDefault();
+            });
 
 	$.address.change(function(event) {
 	    var parts = event.value.split("/");
@@ -769,8 +772,4 @@
 	ko.applyBindings(ct.MonthView.Model, document.getElementById('month'));
 	ko.applyBindings(ct.ActivityView.Model, document.getElementById('edit'));
     });
-
-    // Fixes bug in jQuery Mobile. Without this, the ui-btn-active
-    // isn't removed when we click the navigation links.
-    $('a').live("vclick", function() {});
 }());

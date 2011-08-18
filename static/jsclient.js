@@ -592,7 +592,7 @@
 
                     }
                     weekActivities[activityId]["days"][d.getDay()]["hours"] = activity.duration;
-                    weekActivities[activityId]["days"][d.getDay()]["url"] = "/#/edit/";
+                    weekActivities[activityId]["days"][d.getDay()]["url"] = "/#/edit/"; //TODO
                 }
                 d.add(1).day();
             }

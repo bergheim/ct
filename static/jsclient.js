@@ -713,7 +713,7 @@
 	    if (page.match(/^add/)) {
 		if (activePage != "edit") {
 		    $.mobile.changePage("#edit",
-					{ role: "dialog", transition: "pop", changeHash: false});
+					{ role: "dialog", transition: "slide", changeHash: false});
 		}
 		ct.ActivityView.populate();
 	    }
@@ -721,7 +721,7 @@
 	    if (page.match(/^edit/)) {
 		if (activePage != "edit") {
 		    $.mobile.changePage("#edit",
-					{ role: "dialog", transition: "pop", changeHash: false});
+					{ role: "dialog", transition: "slide", changeHash: false});
 		}
 		var index = Number(args[0]);
 		var activities = ct.getActivities(ct.DayView.Model.date());

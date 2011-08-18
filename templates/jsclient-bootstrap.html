@@ -75,7 +75,21 @@
 	</div> 
       </div>
       <div data-role="content">  
-        Week has no content yet.
+        <table>
+          <thead>
+              <tr>
+                <th><div class="liner">Aktivitet</div></th>
+                <th><div class="liner">M</div></th>
+                <th><div class="liner">T</div></th>
+                <th><div class="liner">O</div></th>
+                <th><div class="liner">T</div></th>
+                <th><div class="liner">F</div></th>
+                <th><div class="liner">L</div></th>
+                <th><div class="liner">S</div></th>
+              </tr>
+          </thead>
+          <tbody data-bind='template: { name: "weekViewTemplate", foreach: days() }'></tbody>
+        </table>
       </div>
       <div data-role="footer">
 	<p>&copy; 2011 The CurrentTime Replacement Project</p>
@@ -221,6 +235,18 @@
       <div class="liner">
         <a data-bind="attr: { href: url }"><span data-bind="text: hours"></span></a>
       </div>
+    </script>
+    <script type="text/html" id="weekViewTemplate">
+      <tr>
+        <td><div class="liner"><span data-bind="text: ct.getProjectShortName(id)"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[1]"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[2]"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[3]"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[4]"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[5]"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[6]"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: days[0]"></span></a></div></td>
+      </tr>
     </script>
     {% endraw %}
 

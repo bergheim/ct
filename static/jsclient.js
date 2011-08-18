@@ -43,6 +43,7 @@
     };
 
     var dayViewUrl = "#/day";
+    var weekViewUrl = "#/week";
     var monthViewUrl = "#/month";
     var createActivityViewModel = function() {
 	var viewModel = {
@@ -102,6 +103,28 @@
 	return viewModel;
     }
 
+    var createWeekViewModel = function() {
+	var viewModel = {
+	    home: weekViewUrl,
+	    date: ko.observable(""),
+	    title: ko.observable(""),
+	    days: ko.observableArray([]),
+	    reload: function() {
+		ct.clear();
+		ct.WeekView.populate();
+	    },
+	};
+
+	viewModel.next = ko.dependentObservable(function() {
+	    return getNextWeekUrl(this.date() || currentWeekString());
+	}, viewModel);
+	viewModel.prev = ko.dependentObservable(function() {
+	    return getPreviousWeekUrl(this.date() || currentWeekString());
+	}, viewModel);
+
+	return viewModel;
+    }
+
     var createMonthViewModel = function() {
 	var viewModel = {
 	    home: monthViewUrl,
@@ -129,6 +152,11 @@
 	return date != null;
     };
 
+    var isValidWeekString = function(s) {
+	var date = getDateFromWeekString(s);
+	return date != null;
+    };
+
     var isValidMonthString = function(s) {
 	var date = getDateFromMonthString(s);
 	return date != null;
@@ -136,6 +164,23 @@
 
     var getDateFromDayString = function(s) {
 	return Date.parseExact(s, "yyyy-MM-dd");
+    };
+
+    var getDateFromWeekString = function(s) {
+        //TODO: add proper parseExact; Date does not support week
+        if (typeof s === "undefined")
+            return null;
+
+        var year = Number(s.substring(0,4));
+        if (year === null || year ==  0)
+            return null;
+
+        var week = Number(s.substring(5));
+
+        if (week < 1 || week > 53)
+            return null;
+
+        return new Date(year, 0, 1).moveToFirstDayOfMonth().mon().add(week-1).weeks()
     };
 
     var getDateFromMonthString = function(s) {
@@ -146,6 +191,10 @@
 	return d.toString("yyyy-MM-dd");
     };
 
+    var getWeekStringFromDate = function(d) {
+	return d.getFullYear() + "-" + d.getWeek()
+    };
+
     var getMonthStringFromDate = function(d) {
 	return d.toString("yyyy-MM");
     };
@@ -153,6 +202,11 @@
     var getTitleFromDayString = function(s) {
 	var d = getDateFromDayString(s);
 	return d.toString("dddd d. MMMM yyyy").toLowerCase();
+    };
+
+    var getTitleFromWeekString = function(s) {
+	//var d = getDateFromWeekString(s);
+        return s;
     };
 
     var getTitleFromMonthString = function(s) {
@@ -168,6 +222,16 @@
     var previousDayFromDayString = function(s) {
 	var d = getDateFromDayString(s).add(-1).day();
 	return getDayStringFromDate(d);
+    };
+
+    var previousWeekFromWeekString = function(s) {
+	var d = getDateFromWeekString(s).add(-1).week();
+	return getWeekStringFromDate(d);
+    };
+
+    var nextWeekFromWeekString = function(s) {
+	var d = getDateFromWeekString(s).add(1).week();
+	return getWeekStringFromDate(d);
     };
 
     var nextMonthFromMonthString = function(s) {
@@ -190,6 +254,10 @@
 	return dayViewUrl + "/" + s;
     };
 
+    var getWeekViewUrl = function(s) {
+	return weekViewUrl + "/" + s;
+    };
+
     var getMonthViewUrl = function(s) {
 	return monthViewUrl + "/" + s;
     };
@@ -202,6 +270,16 @@
     var getPreviousDayUrl = function(s) {
 	var dayString = previousDayFromDayString(s);
 	return getDayViewUrl(dayString);
+    };
+
+    var getPreviousWeekUrl = function(s) {
+	var weekString = previousWeekFromWeekString(s);
+	return getWeekViewUrl(weekString);
+    };
+
+    var getNextWeekUrl = function(s) {
+	var weekString = nextWeekFromWeekString(s);
+	return getWeekViewUrl(weekString);
     };
 
     var getNextMonthUrl = function(s) {
@@ -228,6 +306,10 @@
 	return getDayStringFromDate(Date.today());
     };
 
+    var currentWeekString = function() {
+	return getWeekStringFromDate(Date.today());
+    };
+
     var currentMonthString = function() {
 	return getMonthStringFromDate(Date.today());
     };
@@ -242,6 +324,7 @@
 	this._projects = [];
 	this._activitiesByDay = [];
 	this.DayView.Model = createDayViewModel();
+	this.WeekView.Model = createWeekViewModel();
 	this.MonthView.Model = createMonthViewModel();
 	this.ActivityView.Model = createActivityViewModel();
 
@@ -450,6 +533,69 @@
 	},
     };
 
+    CurrentTime.prototype.WeekView = {
+	getSelectedDateString: function() {
+	   var weekString = getArgumentsFromUrl();
+	   if (!isValidWeekString(weekString)) {
+	       return currentWeekString();
+	   }
+	   return weekString;
+        },
+	populate: function() {
+	    var weekString = this.getSelectedDateString();
+	    var title = getTitleFromWeekString(weekString);
+	    this.Model.date(weekString);
+	    this.Model.title(title);
+	    this.updateDays(weekString);
+	},
+	updateDays: function(weekString) {
+	    var viewModel = this.Model;
+	    if (viewModel.date() != weekString) {
+		return;
+	    }
+
+
+	    viewModel.days.removeAll();
+
+            var days = {}
+	    var d = getDateFromWeekString(weekString);
+            for (var weekDay = 0; weekDay < 7; weekDay++) {
+		var dayString = getDayStringFromDate(d);
+		if (!ct.hasData(dayString)) {
+		    var self = this;
+		    $.mobile.pageLoading();
+		    ct.fetchActivities(dayString, function() {
+			self.updateDays(weekString);
+		    });
+		    return;
+		}
+		$.mobile.pageLoading(true);
+
+		var activities = ct.getActivities(dayString);
+
+                for (var i = 0; i < activities.length; i++) {
+                    var activity = activities[i];
+                    //var name = [ct.getProjectShortName(activity.id)];
+                    var name = activity.id;
+                    var d = getDateFromDayString(activity.day);
+
+                    if (typeof days[name] === "undefined") {
+                        days[name] = {};
+                        days[name]["id"] = activity.id;
+                        days[name]["days"] = {};
+                        for( var day = 0; day < 7; day++ ) {
+                            days[name]["days"][day] = "";
+                        }
+
+                    }
+                    days[name]["days"][d.getDay()] = activity.duration;
+                }
+                d.add(1).day();
+            }
+	    viewModel.days(_.values(days));
+	}
+    };
+
     CurrentTime.prototype.MonthView = {
 	getSelectedDateString: function() {
 	   var monthString = getArgumentsFromUrl();
@@ -593,6 +739,7 @@
 					{ reverse: true, transition: "pop", changeHash: false});
 		    setActive('.weekButton');
 		}
+		ct.WeekView.populate();
 	    }
 
 	    if (page.match(/^month/)) {
@@ -606,6 +753,7 @@
 	});
 
 	ko.applyBindings(ct.DayView.Model, document.getElementById('day'));
+	ko.applyBindings(ct.WeekView.Model, document.getElementById('week'));
 	ko.applyBindings(ct.MonthView.Model, document.getElementById('month'));
 	ko.applyBindings(ct.ActivityView.Model, document.getElementById('edit'));
     });

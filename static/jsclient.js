@@ -246,9 +246,8 @@
     };
 
     var getArgumentsFromUrl = function() {
-	var url = $.address.value();
-	var parts = url.split("/");
-	return parts[2];
+	var parts = location.hash.split("/");
+	return _.rest(parts, 2);
     };
 
     var getDayViewUrl = function(s) {
@@ -411,7 +410,17 @@
     };
 
     CurrentTime.prototype.ActivityView = {
-	populate: function(activity) {
+	populate: function() {
+	    var activity = null;
+
+	    var args = getArgumentsFromUrl();
+	    if (args.length > 0) {
+		var dayString = args[0];
+		var index = args[1];
+		var activities = ct.getActivities(dayString);
+		activity = activities[index];
+	    }
+
 	    this.Model.projects(ct.getProjects());
 	    if (activity) {
 		this.Model.title("Rediger aktivitet");
@@ -530,7 +539,7 @@
 	    var date = this.Model.date();
 	    var activity = ct.getActivity(date, id);
 	    var index = this.Model.activities.indexOf(activity);
-	    return "/#/edit/" + index;
+	    return "/#/edit/" + date + "/" + index;
 	},
     };
 
@@ -723,10 +732,7 @@
 		    $.mobile.changePage("#edit",
 					{ role: "dialog", transition: "slide", changeHash: false});
 		}
-		var index = Number(args[0]);
-		var activities = ct.getActivities(ct.DayView.Model.date());
-		var activity = activities[index];
-		ct.ActivityView.populate(activity);
+		ct.ActivityView.populate();
 	    }
 
 	    if (page.match(/^day/)) {

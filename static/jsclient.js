@@ -587,11 +587,12 @@
                         weekActivities[activityId]["id"] = activity.id;
                         weekActivities[activityId]["days"] = {};
                         for( var day = 0; day < 7; day++ ) {
-                            weekActivities[activityId]["days"][day] = "";
+                            weekActivities[activityId]["days"][day] = {};
                         }
 
                     }
-                    weekActivities[activityId]["days"][d.getDay()] = activity.duration;
+                    weekActivities[activityId]["days"][d.getDay()]["hours"] = activity.duration;
+                    weekActivities[activityId]["days"][d.getDay()]["url"] = "/#/edit/";
                 }
                 d.add(1).day();
             }

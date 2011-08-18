@@ -4,8 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CT: What have you done?</title>
-    <link rel="stylesheet"  href="{{ url_for('static', filename='jquery.mobile-1.0b1.min.css') }}" />
-    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b1.css') }}">
+    <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jquery.mobile-1.0b2.min.css') }}">
     <link rel="stylesheet" style="text/css" href="{{ url_for('static', filename='jsclient.css') }}">
   </head> 
   <body> 
@@ -114,6 +113,7 @@
 	</div> 
       </div>
       <div data-role="content">
+        
 	<table class="calendar">
 	  <thead>
             <tr>
@@ -155,7 +155,7 @@
 	    </div>
 	    <div>
 	      <label for="duration">Timer</label>
-	      <input name="duration" type="text" data-bind='value: duration, valueUpdate: "afterkeydown"' />
+	      <input name="duration" type="number" type="text" data-bind='value: duration, valueUpdate: "afterkeydown"' />
 	    </div>
 	    <div>
 	      <label for="comment">Kommentar</label>
@@ -181,7 +181,7 @@
     </td>
     <td class="col-duration">
     <div class="liner">
-    <input class="duration" data-bind='value: duration, valueUpdate: "afterkeydown"' />
+    <input class="duration" type="number" data-bind='value: duration, valueUpdate: "afterkeydown"' />
     </div>
     </td>
     <td class="col-actions">
@@ -257,7 +257,7 @@
     <script src="{{ url_for('static', filename='jquery.address-1.4.min.js') }}"></script>
     <script src="{{ url_for('static', filename='date-nb-NO.js') }}"></script>
     <script src="{{ url_for('static', filename='jsclient.js') }}"></script>
-    <script src="{{ url_for('static', filename='jquery.mobile-1.0b1.js') }}"></script>
+    <script src="{{ url_for('static', filename='jquery.mobile-1.0b2.min.js') }}"></script>
   </body>
 </html>
 <!-- vim: et sts=2 sw=2

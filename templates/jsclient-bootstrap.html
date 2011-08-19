@@ -74,7 +74,7 @@
           </ul>
 	</div> 
       </div>
-      <div data-role="content">  
+      <div data-role="content" class="content">  
         <table>
           <thead>
               <tr>
@@ -243,7 +243,7 @@
     </script>
     <script type="text/html" id="weekViewTemplate">
       <tr>
-        <td><div class="liner"><span data-bind="text: ct.getProjectShortName(id)"></span></a></div></td>
+        <td><div class="liner"><span data-bind="text: name"></span></a></div></td>
         <td><div class="liner"><a data-bind="text: days[1].hours, attr: { href: days[1].url }"></a></div></td>
         <td><div class="liner"><a data-bind="text: days[2].hours, attr: { href: days[2].url }"></a></div></td>
         <td><div class="liner"><a data-bind="text: days[3].hours, attr: { href: days[3].url }"></a></div></td>

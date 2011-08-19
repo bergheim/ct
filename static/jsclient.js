@@ -603,13 +603,22 @@
                     if (typeof weekActivities[activityId] === "undefined") {
                         weekActivities[activityId] = {};
                         weekActivities[activityId]["id"] = activity.id;
+                        //TODO: use a dynamic ellipsis plugin
+                        var name = ct.getProjectShortName(activity.id);
+                        var maxLength = 16;
+                        if  (name.length > maxLength)
+                          name = name.substring(0,maxLength-3) + "...";
+
+                        weekActivities[activityId]["name"] = name;
+
+                        weekActivities[activityId]["id"] = activity.id;
                         weekActivities[activityId]["days"] = {};
                         for( var day = 0; day < 7; day++ ) {
                             weekActivities[activityId]["days"][day] = {};
                         }
 
                     }
-                    weekActivities[activityId]["days"][d.getDay()]["hours"] = activity.duration;
+                    weekActivities[activityId]["days"][d.getDay()]["hours"] = parseFloat(activity.duration).toFixed(1);
                     weekActivities[activityId]["days"][d.getDay()]["url"] = "/#/edit/" + dayString + "/" + i; //TODO
                 }
                 d.add(1).day();

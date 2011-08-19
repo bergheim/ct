@@ -26,6 +26,17 @@ table.activities .col-actions div.liner {
     width: 26px;
 }
 
+#week .content th .liner,
+#week .content td .liner {
+    width: 2.1em;
+}
+#week .content th:first-child .liner,
+#week .content td:first-child .liner {
+    width: 7em;
+    text-align: left;
+}
+
+
 table.calendar {
     border-spacing: 0px;
     margin: 0 auto;
@@ -43,8 +54,10 @@ table.calendar div.liner a {
     text-decoration: none;
 }
 
+#week .content,
 #month .content {
 padding: 0;
 text-align: center;
 font-size: 85%;
 }
+.ellipsis { margin-right:-10000px; }

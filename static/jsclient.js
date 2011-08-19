@@ -324,11 +324,6 @@
 	return getMonthStringFromDate(Date.today());
     };
 
-    var setActive = function(id) {
-	$('.ui-btn-active').removeClass('ui-btn-active');
-	$(id).addClass('ui-btn-active');
-    };
-
     var CurrentTime = function() {
 	this._isFetchingActivities = false;
 	this._projects = [];
@@ -540,10 +535,12 @@
 	},
 	saveActivities: function() {
 	    var date = this.date();
+            $.mobile.showPageLoadingMsg();
 	    ct.postActivities(
 		date, this.activities(), function(result) {
 		    ct.DayView.updateActivities(date);
 		    ct.DayView.updateRecentActivities(date);
+                    $.mobile.hidePageLoadingMsg();
 		});
 	},
 	getEditUrl: function(id) {
@@ -763,12 +760,14 @@
     $(window).bind("hashchange", function(e, triggered) {
         var nextPage = getPageFromUrl();
         var prevPage = $.mobile.activePage[0].id;
-        if (nextPage === prevPage) {
-            return;
+        if (nextPage !== prevPage) {
+            var options = getChangePageOptions(prevPage, nextPage);
+	    $.mobile.changePage("#" + nextPage, options);
+        } else {
+            var viewModel = getViewModelFromPage(nextPage);
+            viewModel.populate();
         }
-
-        var options = getChangePageOptions(prevPage, nextPage);
-	$.mobile.changePage("#" + nextPage, options);
+	$('.ui-btn-active').not('.ui-state-persist').removeClass('ui-btn-active');
     });
 
     var ct = window.ct = new CurrentTime();
@@ -783,23 +782,21 @@
         ko.applyBindings(ct.ActivityView.Model, document.getElementById('edit'));
     });
 
-    $(document).bind("pageshow", function(event, ui) {
-        switch ($.mobile.activePage[0].id) {
+    var getViewModelFromPage = function(page) {
+        switch (page) {
         case "day":
-	    setActive('.dayButton');
-	    ct.DayView.populate();
-            break;
+            return ct.DayView;
         case "week":
-	    setActive('.weekButton');
-	    ct.WeekView.populate();
-            break;
+            return ct.WeekView;
         case "month":
-	    setActive('.monthButton');
-	    ct.MonthView.populate();
-            break;
+	    return ct.MonthView;
         case "edit":
-	    ct.ActivityView.populate();
-            break;
+	    return ct.ActivityView;
         }
+    };
+
+    $(document).bind("pageshow", function(event, ui) {
+        var viewModel = getViewModelFromPage($.mobile.activePage[0].id);
+        viewModel.populate();
     });
 }());

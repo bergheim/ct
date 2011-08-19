@@ -245,6 +245,16 @@
 	return getMonthStringFromDate(d);
     };
 
+    var getPageFromUrl = function() {
+	var parts = location.hash.split("/");
+        var page = parts[1] || "day";
+
+        if (page === "add")
+            page = "edit";
+
+        return page;
+    };
+
     var getArgumentsFromUrl = function() {
 	var parts = location.hash.split("/");
 	return _.rest(parts, 2);
@@ -686,13 +696,6 @@
 	}
     };
 
-    var ct = window.ct = new CurrentTime();
-
-    $(document).bind("mobileinit", function() {
-        $.mobile.ajaxEnabled = false;
-        $.mobile.hashListeningEnabled = false;
-    });
-
     $(document).bind("pagebeforecreate", function() {
         $("[data-role=content]")
             .live("swipeleft", function(event) {
@@ -701,7 +704,7 @@
 		}
 
 		var url = $("a.next", $.mobile.activePage).attr("href");
-		$.address.value(url.replace(/^#/, ""));
+                location.hash = url.replace(/^#/, "");
 		event.preventDefault();
             });
 
@@ -712,64 +715,91 @@
 		}
 
 		var url = $("a.prev", $.mobile.activePage).attr("href");
-		$.address.value(url.replace(/^#/, ""));
+                location.hash = url.replace(/^#/, "");
 		event.preventDefault();
             });
 
-	$.address.change(function(event) {
-	    var parts = event.value.split("/");
-	    var page = parts[1] || "day";
-	    var args = _.rest(parts, 2);
-	    var activePage = $.mobile.activePage[0].id;
+        var page = getPageFromUrl();
+        $.mobile.changePage("#" + page, {
+            transition: 'none',
+            changeHash: false
+        });
+    });
 
-	    if (page.match(/^add/)) {
-		if (activePage != "edit") {
-		    $.mobile.changePage("#edit",
-					{ role: "dialog", transition: "slide", changeHash: false});
-		}
-		ct.ActivityView.populate();
-	    }
+    var getChangePageOptions = function(from, to) {
+        var options = {
+            reverse: false,
+            transition: "slide",
+            changeHash: false,
+            fromHashChange: true
+        };
 
-	    if (page.match(/^edit/)) {
-		if (activePage != "edit") {
-		    $.mobile.changePage("#edit",
-					{ role: "dialog", transition: "slide", changeHash: false});
-		}
-		ct.ActivityView.populate();
-	    }
+        if (to === "edit") {
+            options.transition = "pop";
+            options.role = "dialog";
+            return options;
+        }
 
-	    if (page.match(/^day/)) {
-		if (activePage != "day") {
-		    $.mobile.changePage("#day",
-					{ reverse: true, transition: "slide", changeHash: false});
-		    setActive('.dayButton');
-		}
-		ct.DayView.populate();
-	    }
+        if (from === "edit") {
+            options.transition = "pop";
+            options.reverse = true;
+            return options;
+        }
 
-	    if (page.match(/^week/)) {
-                var reverse = (activePage == "day") ? false : true;
-		if (activePage != "week") {
-		    $.mobile.changePage("#week",
-					{ reverse: reverse, transition: "slide", changeHash: false});
-		    setActive('.weekButton');
-		}
-		ct.WeekView.populate();
-	    }
+        switch (to) {
+        case "day":
+            options.reverse = true;
+            break;
+        case "week":
+            options.reverse = from === "month";
+            break;
+        case "month":
+            options.reverse = false;
+            break;
+        }
+        return options;
+    };
 
-	    if (page.match(/^month/)) {
-		if (activePage != "month") {
-		    $.mobile.changePage("#month",
-					{ reverse: false, transition: "slide", changeHash: false});
-		    setActive('.monthButton');
-		}
-		ct.MonthView.populate();
-	    }
-	});
+    $(window).bind("hashchange", function(e, triggered) {
+        var nextPage = getPageFromUrl();
+        var prevPage = $.mobile.activePage[0].id;
+        if (nextPage === prevPage) {
+            return;
+        }
 
-	ko.applyBindings(ct.DayView.Model, document.getElementById('day'));
-	ko.applyBindings(ct.WeekView.Model, document.getElementById('week'));
-	ko.applyBindings(ct.MonthView.Model, document.getElementById('month'));
-	ko.applyBindings(ct.ActivityView.Model, document.getElementById('edit'));
+        var options = getChangePageOptions(prevPage, nextPage);
+	$.mobile.changePage("#" + nextPage, options);
+    });
+
+    var ct = window.ct = new CurrentTime();
+
+    $(document).bind("mobileinit", function() {
+        $.mobile.ajaxEnabled = false;
+        $.mobile.hashListeningEnabled = false;
+
+        ko.applyBindings(ct.DayView.Model, document.getElementById('day'));
+        ko.applyBindings(ct.WeekView.Model, document.getElementById('week'));
+        ko.applyBindings(ct.MonthView.Model, document.getElementById('month'));
+        ko.applyBindings(ct.ActivityView.Model, document.getElementById('edit'));
+    });
+
+    $(document).bind("pageshow", function(event, ui) {
+        switch ($.mobile.activePage[0].id) {
+        case "day":
+	    setActive('.dayButton');
+	    ct.DayView.populate();
+            break;
+        case "week":
+	    setActive('.weekButton');
+	    ct.WeekView.populate();
+            break;
+        case "month":
+	    setActive('.monthButton');
+	    ct.MonthView.populate();
+            break;
+        case "edit":
+	    ct.ActivityView.populate();
+            break;
+        }
     });
 }());

@@ -605,7 +605,7 @@
                         weekActivities[activityId]["id"] = activity.id;
                         //TODO: use a dynamic ellipsis plugin
                         var name = ct.getProjectShortName(activity.id);
-                        var maxLength = 16;
+                        var maxLength = 15;
                         if  (name.length > maxLength)
                           name = name.substring(0,maxLength-3) + "...";
 

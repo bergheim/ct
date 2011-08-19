@@ -47,9 +47,9 @@ table.calendar div.liner {
     padding: 0.2em;
     height: 2em;
     text-align: right;
-    background-color: white;
 }
 
+#week .content a,
 table.calendar div.liner a {
     text-decoration: none;
 }
